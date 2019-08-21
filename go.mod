@@ -1,4 +1,4 @@
-module github.com/layer5io/meshery-istio
+module github.com/layer5io/meshery-app-mesh
 
 require (
 	cloud.google.com/go v0.37.4 // indirect
