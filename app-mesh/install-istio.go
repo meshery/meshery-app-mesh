@@ -21,7 +21,7 @@ import (
 
 const (
 	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
-	URLSuffix   = "-linux.tar.gz"
+	urlsuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 1 * time.Hour
 )
@@ -36,20 +36,21 @@ var (
 	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
 	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
 )
-
+// APIInfo is used to store individual response from GitHub release call
 type APIInfo struct {
 	TagName    string   `json:"tag_name,omitempty"`
 	PreRelease bool     `json:"prerelease,omitempty"`
 	Assets     []*Asset `json:"assets,omitempty"`
 }
 
+// Asset is used to store the individual asset data as part of a release
 type Asset struct {
 	Name        string `json:"name,omitempty"`
 	State       string `json:"state,omitempty"`
 	DownloadURL string `json:"browser_download_url,omitempty"`
 }
 
-func (iClient *IstioClient) getLatestReleaseURL() error {
+func (iClient *Client) getLatestReleaseURL() error {
 	if iClient.istioReleaseDownloadURL == "" || time.Since(iClient.istioReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
@@ -83,8 +84,8 @@ func (iClient *IstioClient) getLatestReleaseURL() error {
 		logrus.Debugf("retrieved api info: %+#v", result)
 		if result != nil && result.Assets != nil && len(result.Assets) > 0 {
 			for _, asset := range result.Assets {
-				if strings.HasSuffix(asset.Name, URLSuffix) {
-					iClient.istioReleaseVersion = strings.Replace(asset.Name, URLSuffix, "", -1)
+				if strings.HasSuffix(asset.Name, urlsuffix) {
+					iClient.istioReleaseVersion = strings.Replace(asset.Name, urlsuffix, "", -1)
 					iClient.istioReleaseDownloadURL = asset.DownloadURL
 					iClient.istioReleaseUpdatedAt = time.Now()
 					return nil
@@ -98,7 +99,7 @@ func (iClient *IstioClient) getLatestReleaseURL() error {
 	return nil
 }
 
-func (iClient *IstioClient) downloadFile(localFile string) error {
+func (iClient *Client) downloadFile(localFile string) error {
 	dFile, err := os.Create(localFile)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to create a file on the filesystem at %s", localFile)
@@ -130,7 +131,7 @@ func (iClient *IstioClient) downloadFile(localFile string) error {
 	return nil
 }
 
-func (iClient *IstioClient) untarPackage(destination, fileToUntar string) error {
+func (iClient *Client) untarPackage(destination, fileToUntar string) error {
 	lFile, err := os.Open(fileToUntar)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to read the local file %s", fileToUntar)
@@ -188,7 +189,7 @@ func (iClient *IstioClient) untarPackage(destination, fileToUntar string) error 
 	}
 }
 
-func (iClient *IstioClient) downloadIstio() (string, error) {
+func (iClient *Client) downloadIstio() (string, error) {
 	logrus.Debug("preparing to download the latest istio release")
 	err := iClient.getLatestReleaseURL()
 	if err != nil {
@@ -222,7 +223,7 @@ func (iClient *IstioClient) downloadIstio() (string, error) {
 	return fileName, nil
 }
 
-func (iClient *IstioClient) getIstioComponentYAML(fileName string) (string, error) {
+func (iClient *Client) getIstioComponentYAML(fileName string) (string, error) {
 	specificVersionName, err := iClient.downloadIstio()
 	if err != nil {
 		return "", err
@@ -234,11 +235,10 @@ func (iClient *IstioClient) getIstioComponentYAML(fileName string) (string, erro
 		if os.IsNotExist(err) {
 			logrus.Error(err)
 			return "", err
-		} else {
-			err = errors.Wrap(err, "unknown error")
-			logrus.Error(err)
-			return "", err
 		}
+		err = errors.Wrap(err, "unknown error")
+		logrus.Error(err)
+		return "", err
 	}
 	fileContents, err := ioutil.ReadFile(installFileLoc)
 	if err != nil {
@@ -249,7 +249,7 @@ func (iClient *IstioClient) getIstioComponentYAML(fileName string) (string, erro
 	return string(fileContents), nil
 }
 
-func (iClient *IstioClient) getCRDsYAML() ([]string, error) {
+func (iClient *Client) getCRDsYAML() ([]string, error) {
 	res := []string{}
 
 	rEx, err := regexp.Compile(crdPattern)
@@ -284,18 +284,17 @@ func (iClient *IstioClient) getCRDsYAML() ([]string, error) {
 	return res, nil
 }
 
-func (iClient *IstioClient) getLatestIstioYAML(installmTLS bool) (string, error) {
+func (iClient *Client) getLatestIstioYAML(installmTLS bool) (string, error) {
 	if installmTLS {
-		return iClient.getIstioComponentYAML(installWithmTLSFile)
-	} else {
-		return iClient.getIstioComponentYAML(installFile)
+		return iClient.getKumaComponentYAML(installWithmTLSFile)
 	}
+	return iClient.getKumaComponentYAML(installFile)
 }
 
-func (iClient *IstioClient) getBookInfoAppYAML() (string, error) {
+func (iClient *Client) getBookInfoAppYAML() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoInstallFile)
 }
 
-func (iClient *IstioClient) getBookInfoGatewayYAML() (string, error) {
+func (iClient *Client) getBookInfoGatewayYAML() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoGatewayInstallFile)
 }
