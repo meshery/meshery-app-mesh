@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package istio
+//Package app-mesh
+package app-mesh
 
 type supportedOperation struct {
 	// a friendly name
@@ -23,9 +24,9 @@ type supportedOperation struct {
 
 const (
 	customOpCommand         = "custom"
-	runVet                  = "istio_vet"
-	installIstioCommand     = "istio_install"
-	installmTLSIstioCommand = "istio_mtls_install"
+	runVet                  = "app-mesh_vet"
+	installapp-meshCommand     = "app-mesh_install"
+	installmTLSapp-meshCommand = "app-mesh_mtls_install"
 	installBookInfoCommand  = "install_book_info"
 	cbCommand               = "cb1"
 	installSMI              = "install_smi"
@@ -33,21 +34,21 @@ const (
 )
 
 var supportedOps = map[string]supportedOperation{
-	installIstioCommand: {
-		name: "Install the latest version of Istio",
-		// templateName: "install_istio.tmpl",
+	installapp-meshCommand: {
+		name: "Install the latest version of app-mesh",
+		// templateName: "install_app-mesh.tmpl",
 	},
-	installmTLSIstioCommand: {
-		name: "Install the latest version of Istio with mTLS",
+	installmTLSapp-meshCommand: {
+		name: "Install the latest version of app-mesh with mTLS",
 	},
 	installBookInfoCommand: {
 		name: "Install the canonical Book Info Application",
-		// templateName: "install_istio.tmpl",
+		// templateName: "install_app-mesh.tmpl",
 	},
 	runVet: {
-		name: "Run istio-vet",
-		// templateName: "istio_vet.tmpl",
-		// appLabel:     "istio-vet",
+		name: "Run app-mesh-vet",
+		// templateName: "app-mesh_vet.tmpl",
+		// appLabel:     "app-mesh-vet",
 		// returnLogs:   true,
 	},
 	cbCommand: {
@@ -55,7 +56,7 @@ var supportedOps = map[string]supportedOperation{
 		templateName: "circuit_breaking.tmpl",
 	},
 	installSMI: {
-		name: "Install Service Mesh Interface (SMI) Istio Adapter",
+		name: "Install Service Mesh Interface (SMI) app-mesh Adapter",
 	},
 	customOpCommand: {
 		name: "Custom YAML",

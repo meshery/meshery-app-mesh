@@ -1,4 +1,5 @@
-package istio
+//Package app-mesh
+package app-mesh
 
 import (
 	"archive/tar"
@@ -6,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/ioutil"                                                                                                      
 	"net/http"
 	"os"
 	"path"
@@ -20,21 +21,21 @@ import (
 )
 
 const (
-	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
-	urlsuffix   = "-linux.tar.gz"
+	repoURL     = "https://api.github.com/repos/app-mesh/app-mesh/releases/latest"
+	URLSuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 1 * time.Hour
 )
 
 var (
-	localFile                  = path.Join(os.TempDir(), "istio.tar.gz")
-	destinationFolder          = path.Join(os.TempDir(), "istio")
+	localFile                  = path.Join(os.TempDir(), "app-mesh.tar.gz")
+	destinationFolder          = path.Join(os.TempDir(), "app-mesh")
 	basePath                   = path.Join(destinationFolder, "%s")
-	installFile                = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
-	installWithmTLSFile        = path.Join(basePath, "install/kubernetes/istio-demo-auth.yaml")
+	installFile                = path.Join(basePath, "install/kubernetes/app-mesh-demo.yaml")
+	installWithmTLSFile        = path.Join(basePath, "install/kubernetes/app-mesh-demo-auth.yaml")
 	bookInfoInstallFile        = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
-	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
+	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/app-mesh-init/files/")
 )
 // APIInfo is used to store individual response from GitHub release call
 type APIInfo struct {
@@ -50,8 +51,9 @@ type Asset struct {
 	DownloadURL string `json:"browser_download_url,omitempty"`
 }
 
+//getLatestReleaseURL is to identify the latest release of this service mesh
 func (iClient *Client) getLatestReleaseURL() error {
-	if iClient.istioReleaseDownloadURL == "" || time.Since(iClient.istioReleaseUpdatedAt) > cachePeriod {
+	if iClient.app-meshReleaseDownloadURL == "" || time.Since(iClient.app-meshReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
 		if err != nil {
@@ -84,10 +86,10 @@ func (iClient *Client) getLatestReleaseURL() error {
 		logrus.Debugf("retrieved api info: %+#v", result)
 		if result != nil && result.Assets != nil && len(result.Assets) > 0 {
 			for _, asset := range result.Assets {
-				if strings.HasSuffix(asset.Name, urlsuffix) {
-					iClient.istioReleaseVersion = strings.Replace(asset.Name, urlsuffix, "", -1)
-					iClient.istioReleaseDownloadURL = asset.DownloadURL
-					iClient.istioReleaseUpdatedAt = time.Now()
+				if strings.HasSuffix(asset.Name, URLSuffix) {
+					iClient.app-meshReleaseVersion = strings.Replace(asset.Name, URLSuffix, "", -1)
+					iClient.app-meshReleaseDownloadURL = asset.DownloadURL
+					iClient.app-meshReleaseUpdatedAt = time.Now()
 					return nil
 				}
 			}
@@ -108,16 +110,16 @@ func (iClient *Client) downloadFile(localFile string) error {
 	}
 	defer dFile.Close()
 
-	resp, err := http.Get(iClient.istioReleaseDownloadURL)
+	resp, err := http.Get(iClient.app-meshReleaseDownloadURL)
 	if err != nil {
-		err = errors.Wrapf(err, "unable to download the file from URL: %s", iClient.istioReleaseDownloadURL)
+		err = errors.Wrapf(err, "unable to download the file from URL: %s", iClient.app-meshReleaseDownloadURL)
 		logrus.Error(err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("unable to download the file from URL: %s, status: %s", iClient.istioReleaseDownloadURL, resp.Status)
+		err = fmt.Errorf("unable to download the file from URL: %s, status: %s", iClient.app-meshReleaseDownloadURL, resp.Status)
 		logrus.Error(err)
 		return err
 	}
@@ -189,14 +191,14 @@ func (iClient *Client) untarPackage(destination, fileToUntar string) error {
 	}
 }
 
-func (iClient *Client) downloadIstio() (string, error) {
-	logrus.Debug("preparing to download the latest istio release")
+func (iClient *Client) downloadapp-mesh() (string, error) {
+	logrus.Debug("preparing to download the latest app-mesh release")
 	err := iClient.getLatestReleaseURL()
 	if err != nil {
 		return "", err
 	}
-	fileName := iClient.istioReleaseVersion
-	downloadURL := iClient.istioReleaseDownloadURL
+	fileName := iClient.app-meshReleaseVersion
+	downloadURL := iClient.app-meshReleaseDownloadURL
 	logrus.Debugf("retrieved latest file name: %s and download url: %s", fileName, downloadURL)
 
 	proceedWithDownload := true
@@ -223,8 +225,8 @@ func (iClient *Client) downloadIstio() (string, error) {
 	return fileName, nil
 }
 
-func (iClient *Client) getIstioComponentYAML(fileName string) (string, error) {
-	specificVersionName, err := iClient.downloadIstio()
+func (iClient *Client) getapp-meshComponentYAML(fileName string) (string, error) {
+	specificVersionName, err := iClient.downloadapp-mesh()
 	if err != nil {
 		return "", err
 	}
@@ -259,7 +261,7 @@ func (iClient *Client) getCRDsYAML() ([]string, error) {
 		return nil, err
 	}
 
-	specificVersionName, err := iClient.downloadIstio()
+	specificVersionName, err := iClient.downloadapp-mesh()
 	if err != nil {
 		return nil, err
 	}
@@ -284,17 +286,19 @@ func (iClient *Client) getCRDsYAML() ([]string, error) {
 	return res, nil
 }
 
-func (iClient *Client) getLatestIstioYAML(installmTLS bool) (string, error) {
+func (iClient *Client) getLatestapp-meshYAML(installmTLS bool) (string, error) {
 	if installmTLS {
-		return iClient.getKumaComponentYAML(installWithmTLSFile)
+		return iClient.getapp-meshComponentYAML(installWithmTLSFile)
+	} else {
+		return iClient.getapp-meshComponentYAML(installFile)
 	}
 	return iClient.getKumaComponentYAML(installFile)
 }
 
 func (iClient *Client) getBookInfoAppYAML() (string, error) {
-	return iClient.getIstioComponentYAML(bookInfoInstallFile)
+	return iClient.getapp-meshComponentYAML(bookInfoInstallFile)
 }
 
 func (iClient *Client) getBookInfoGatewayYAML() (string, error) {
-	return iClient.getIstioComponentYAML(bookInfoGatewayInstallFile)
+	return iClient.getapp-meshComponentYAML(bookInfoGatewayInstallFile)
 }
