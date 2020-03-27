@@ -1,4 +1,5 @@
-package istio
+//Package app-mesh
+package app-mesh
 
 import (
 	"bufio"
@@ -23,7 +24,7 @@ type YAMLDecoder struct {
 func NewDocumentDecoder(r io.ReadCloser) io.ReadCloser {
 	b := make([]byte, 4096)
 	scanner := bufio.NewScanner(r)
-	scanner.Buffer(b, 256*1024) // overriding: the size of the buffer used was small when loading large sections from istio deployment yaml
+	scanner.Buffer(b, 256*1024) // overriding: the size of the buffer used was small when loading large sections from app-mesh deployment yaml
 	scanner.Split(splitYAMLDocument)
 	return &YAMLDecoder{
 		r:       r,
