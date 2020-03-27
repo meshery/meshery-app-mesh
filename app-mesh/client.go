@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package istio
+//Package app-mesh
+package app-mesh
 
 import (
 	"time"
 
-	"github.com/layer5io/meshery-istio/meshes"
+	"github.com/layer5io/meshery-app-mesh/meshes"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -28,16 +29,16 @@ import (
 	"github.com/ghodss/yaml"
 )
 
-// IstioClient represents an Istio client in Meshery
-type IstioClient struct {
+// Client represents an app-mesh client in Meshery
+type Client struct {
 	config           *rest.Config
 	k8sClientset     *kubernetes.Clientset
 	k8sDynamicClient dynamic.Interface
 	eventChan        chan *meshes.EventsResponse
 
-	istioReleaseVersion     string
-	istioReleaseDownloadURL string
-	istioReleaseUpdatedAt   time.Time
+	app-meshReleaseVersion     string
+	app-meshReleaseDownloadURL string
+	app-meshReleaseUpdatedAt   time.Time
 }
 
 func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
@@ -55,9 +56,9 @@ func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func newClient(kubeconfig []byte, contextName string) (*IstioClient, error) {
+func newClient(kubeconfig []byte, contextName string) (*Client, error) {
 	kubeconfig = monkeyPatchingToSupportInsecureConn(kubeconfig)
-	client := IstioClient{}
+	client := Client{}
 	config, err := configClient(kubeconfig, contextName)
 	if err != nil {
 		return nil, err
