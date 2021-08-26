@@ -13,7 +13,7 @@
 // limitations under the License.
 
 //Package app-mesh
-package app-mesh
+package app
 
 type supportedOperation struct {
 	// a friendly name

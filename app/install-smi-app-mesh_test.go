@@ -1,5 +1,5 @@
 //Package app-mesh
-package app-mesh
+package app
 
 import (
 	"testing"

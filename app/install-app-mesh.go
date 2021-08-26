@@ -1,26 +1,7 @@
 //Package app-mesh
-package app-mesh
+package app
 
-import (
-	"archive/tar"
-	"compress/gzip"
-	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"                                                                                                      
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
-	"regexp"
-	"strings"
-	"time"
-
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-)
-
-const (
+/* const (
 	repoURL     = "https://api.github.com/repos/app-mesh/app-mesh/releases/latest"
 	URLSuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
@@ -302,3 +283,4 @@ func (iClient *Client) getBookInfoAppYAML() (string, error) {
 func (iClient *Client) getBookInfoGatewayYAML() (string, error) {
 	return iClient.getapp-meshComponentYAML(bookInfoGatewayInstallFile)
 }
+*/
