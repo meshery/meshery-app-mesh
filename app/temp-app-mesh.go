@@ -6,22 +6,19 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
-	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-adapter-library/status"
-	internalconfig "github.com/layer5io/meshery-istio/internal/config"
-	"github.com/layer5io/meshery-istio/istio/oam"
+	internalconfig "github.com/layer5io/meshery-app-mesh/internal/config"
 	meshkitCfg "github.com/layer5io/meshkit/config"
 	"github.com/layer5io/meshkit/logger"
-	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 )
 
 type AppMesh struct {
 	adapter.Adapter
 }
 
-// New initializes istio handler.
+// New initializes AppMesh handler.
 func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.Handler {
-	return &Istio{
+	return &AppMesh{
 		Adapter: adapter.Adapter{
 			Config:            c,
 			Log:               l,
@@ -30,7 +27,7 @@ func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.
 	}
 }
 
-func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationsRequest) error{
+func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 
 	operations := make(adapter.Operations)
 	err := appMesh.Config.GetObject(adapter.OperationsKey, &operations)
@@ -44,12 +41,11 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		Details:     "Operation is not supported",
 	}
 
-	
 	switch op.Req.OperationName {
 	case internalconfig.AppMeshOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			if stat, err = hh.installNginx(opReq.IsDeleteOperation, version, opReq.Namespace); err != nil {
+			if stat, err = hh.installAppMesh(opReq.IsDeleteOperation, version, opReq.Namespace); err != nil {
 				e.Summary = fmt.Sprintf("Error while %s AWS App mesh", stat)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
@@ -59,8 +55,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = fmt.Sprintf("The App mesh is now %s.", stat)
 			hh.StreamInfo(e)
 		}(appMesh, e)
-		
-	}
+
 	case common.SmiConformanceOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			name := operations[opReq.OperationName].Description
@@ -71,7 +66,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				Namespace:   "meshery",
 				Labels:      make(map[string]string),
 				Annotations: map[string]string{
-					"INJECT_STATSD_EXPORTER_SIDECAR"="true",
+					"INJECT_STATSD_EXPORTER_SIDECAR=true",
 				},
 			})
 			if err != nil {
@@ -114,4 +109,5 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	default:
 		nginx.StreamErr(e, ErrOpInvalid)
 
+	}
 }

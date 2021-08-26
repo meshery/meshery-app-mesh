@@ -7,13 +7,16 @@ import (
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
-	"github.com/layer5io/meshery-adapter-library"
+	"github.com/layer5io/meshery-adapter-library/status"
+
+	//	"github.com/layer5io/meshery-adapter-library"
 	"github.com/layer5io/meshkit/utils"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 const (
-	LabelNamespace = "label-namespace"
+	LabelNamespace        = "label-namespace"
+	ServiceMesh_KUMA_MESH = "stuff"
 )
 
 var (
@@ -42,7 +45,7 @@ var (
 
 	// MeshSpec is the spec for the service mesh associated with this adapter
 	MeshSpec = map[string]string{
-		"name":    smp.ServiceMesh_AWS_APP_MESH.Enum().String(),
+		"name":    smp.ServiceMesh_APP_MESH.Enum().String(),
 		"status":  status.NotInstalled,
 		"version": status.None,
 	}

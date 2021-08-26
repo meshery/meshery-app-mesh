@@ -6,18 +6,17 @@ import (
 	"path"
 	"time"
 
-	"github.com/layer5io/meshery-nginx/nginx"
-	"github.com/layer5io/meshkit/logger"
-
-	// "github.com/layer5io/meshkit/tracing"
+	//"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
-	"github.com/layer5io/meshery-nginx/internal/config"
+	"github.com/layer5io/meshery-app-mesh/internal/config"
+	"github.com/layer5io/meshkit/logger"
+	// "github.com/layer5io/meshkit/tracing"
 )
 
 var (
-	serviceName = "nginx-adaptor"
+	serviceName = "app-mesh-adapter"
 )
 
 // main is the entrypoint of the adaptor
@@ -56,7 +55,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.ViperKey)
+	//kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.ViperKey)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
@@ -70,10 +69,10 @@ func main() {
 	// }
 
 	// Initialize Handler intance
-	handler := nginx.New(cfg, log, kubeconfigHandler)
-	handler = adapter.AddLogger(log, handler)
+	//handler := appmesh.New(cfg, log, kubeconfigHandler)
+	//handler = adapter.AddLogger(log, handler)
 
-	service.Handler = handler
+	//service.Handler = handler
 	service.Channel = make(chan interface{}, 10)
 	service.StartedAt = time.Now()
 
