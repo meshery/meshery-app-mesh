@@ -14,3 +14,7 @@ COPY --from=bd /etc/passwd /etc/passwd
 USER appuser
 WORKDIR /app
 CMD ./meshery-app-mesh
+
+
+ENV SERVICE_ADDR="meshery-app-mesh"
+ENV MESHERY_SERVER="http://meshery:9081"

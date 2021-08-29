@@ -1,4 +1,4 @@
-package app
+package app_mesh
 
 import (
 	"context"
@@ -40,8 +40,9 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		Summary:     status.Deploying,
 		Details:     "Operation is not supported",
 	}
+	stat := status.Deploying
 
-	switch op.Req.OperationName {
+	switch opReq.OperationName {
 	case internalconfig.AppMeshOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
@@ -66,9 +67,10 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				Namespace:   "meshery",
 				Labels:      make(map[string]string),
 				Annotations: map[string]string{
-					"INJECT_STATSD_EXPORTER_SIDECAR=true",
+					"appmesh.k8s.aws/sidecarInjectorWebhook": "enabled",
 				},
 			})
+
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
 				e.Details = err.Error()
@@ -78,7 +80,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
 			ee.Details = ""
 			hh.StreamInfo(e)
-		}(nginx, e)
+		}(appMesh, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
@@ -92,7 +94,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
 			hh.StreamInfo(e)
-		}(nginx, e)
+		}(appMesh, e)
 	case common.CustomOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
@@ -105,9 +107,10 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
 			ee.Details = ""
 			hh.StreamInfo(e)
-		}(nginx, e)
+		}(appMesh, e)
 	default:
-		nginx.StreamErr(e, ErrOpInvalid)
+		appMesh.StreamErr(e, ErrOpInvalid)
 
 	}
+	return nil
 }

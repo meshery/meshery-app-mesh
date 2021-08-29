@@ -15,14 +15,11 @@ import (
 )
 
 const (
-	LabelNamespace        = "label-namespace"
-	ServiceMesh_KUMA_MESH = "stuff"
+	LabelNamespace = "label-namespace"
 )
 
 var (
-	// NginxOperation is the default name for the install
-	// and uninstall commands on the nginx mesh
-	NginxOperation = strings.ToLower(smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String())
+	AppMeshOperation = strings.ToLower(smp.ServiceMesh_APP_MESH.Enum().String())
 
 	ServerVersion  = status.None
 	ServerGitSHA   = status.None
@@ -37,9 +34,9 @@ var (
 
 	// ServerConfig is the configuration for the gRPC server
 	ServerConfig = map[string]string{
-		"name":     smp.ServiceMesh_NGINX_SERVICE_MESH.Enum().String(),
+		"name":     smp.ServiceMesh_APP_MESH.Enum().String(),
 		"type":     "adapter",
-		"port":     "10020",
+		"port":     "10000",
 		"traceurl": status.None,
 	}
 
@@ -80,6 +77,7 @@ func New(provider string) (config.Handler, error) {
 	}
 
 	return nil, ErrEmptyConfig
+
 }
 
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {

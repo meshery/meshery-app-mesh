@@ -19,11 +19,11 @@ import (
 )
 
 const (
-	ErrEmptyConfigCode           = "test"
-	ErrInstallBinaryCode         = "test"
-	ErrGetLatestReleasesCode     = "test"
-	ErrGetLatestReleaseNamesCode = "test"
-	ErrStatusCheckCode           = "test"
+	ErrEmptyConfigCode           = "app-mesh"
+	ErrInstallBinaryCode         = "app-mesh"
+	ErrGetLatestReleasesCode     = "app-mesh"
+	ErrGetLatestReleaseNamesCode = "app-mesh"
+	ErrStatusCheckCode           = "app-mesh"
 )
 
 var (

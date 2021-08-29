@@ -9,7 +9,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	versions, _ := getLatestReleaseNames(3)
 
-	dev[NginxOperation] = &adapter.Operation{
+	dev[AppMeshOperation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_INSTALL),
 		Description: "AWS App Mesh",
 		Versions:    versions,
