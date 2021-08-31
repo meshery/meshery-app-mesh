@@ -33,7 +33,7 @@ var (
 	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
 )
 
-// ErrInstallNginx is the error for install mesh
+// ErrInstallAppMesh is the error for install mesh
 func ErrInstallAppMesh(err error) error {
 	return errors.New(ErrInstallAppMeshCode, errors.Alert, []string{"Error with App Mesh installation"}, []string{err.Error()}, []string{}, []string{})
 
@@ -55,8 +55,8 @@ func ErrStreamEvent(err error) error {
 }
 
 // ErrSampleApp is the error for operations on the sample apps
-func ErrSampleApp(err error) error {
-	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error()}, []string{}, []string{})
+func ErrSampleApp(err error, status string) error {
+	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrCustomOperation is the error for custom operations
