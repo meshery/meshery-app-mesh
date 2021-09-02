@@ -36,7 +36,7 @@ var (
 	ServerConfig = map[string]string{
 		"name":     smp.ServiceMesh_APP_MESH.Enum().String(),
 		"type":     "adapter",
-		"port":     "10010",
+		"port":     "10005",
 		"traceurl": status.None,
 	}
 

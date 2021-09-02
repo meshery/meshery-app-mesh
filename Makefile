@@ -11,7 +11,7 @@ docker:
 docker-run:
 	(docker rm -f meshery-app-mesh) || true
 	docker run --name meshery-app-mesh -d \
-	-p 10000:10000 \
+	-p 10005:10005 \
 	-e DEBUG=true \
 	layer5/meshery-app-mesh
 
