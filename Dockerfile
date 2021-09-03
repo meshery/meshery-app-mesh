@@ -1,20 +1,29 @@
 FROM golang:1.12.8 as bd
-RUN adduser --disabled-login appuser
-WORKDIR /github.com/layer5io/meshery-app-mesh
-ADD . .
-RUN cd cmd; go build -ldflags="-w -s" -a -o /meshery-app-mesh .
-RUN find . -name "*.go" -type f -delete; mv app-mesh /
 
-FROM alpine
-RUN apk --update add ca-certificates
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
-COPY --from=bd /meshery-app-mesh /app/
-COPY --from=bd /app-mesh /app/app-mesh
-COPY --from=bd /etc/passwd /etc/passwd
-USER appuser
-WORKDIR /app
-CMD ./meshery-app-mesh
+ARG VERSION
+ARG GIT_COMMITSHA
+WORKDIR /build
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+# Copy the go source
+COPY main.go main.go
+COPY internal/ internal/
+COPY app_mesh/ app_mesh/
+# Build
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-app-mesh main.go
 
-
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/base
+WORKDIR /
+ENV DISTRO="debian"
+ENV GOARCH="amd64"
 ENV SERVICE_ADDR="meshery-app-mesh"
 ENV MESHERY_SERVER="http://meshery:9081"
+COPY templates/ ./templates
+COPY --from=builder /build/meshery-app-mesh .
+ENTRYPOINT ["/meshery-app-mesh"]
