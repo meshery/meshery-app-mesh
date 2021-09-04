@@ -11,7 +11,7 @@ import (
 
 const (
 	repo  = "https://aws.github.io/eks-charts"
-	chart = "eks"
+	chart = "appmesh-controller"
 )
 
 // Installs APP-MESH service mesh using helm charts.
