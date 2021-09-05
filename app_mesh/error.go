@@ -26,6 +26,14 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "replace"
 
+	ErrParseAppMeshCoreComponentCode = "replace"
+
+	ErrAppMeshCoreComponentFailCode = "replace"
+
+	ErrInvalidOAMComponentTypeCode = "replace"
+
+	ErrProcessOAMCode = "replace"
+
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -67,4 +75,24 @@ func ErrCustomOperation(err error) error {
 // ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrParseKumaCoreComponent is the error when kuma core component manifest parsing fails
+func ErrParseAppMeshCoreComponent(err error) error {
+	return errors.New(ErrParseAppMeshCoreComponentCode, errors.Alert, []string{"kuma core component manifest parsing failing"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrInvalidOAMComponentType is the error when the OAM component name is not valid
+func ErrInvalidOAMComponentType(compName string) error {
+	return errors.New(ErrInvalidOAMComponentTypeCode, errors.Alert, []string{"invalid OAM component name: ", compName}, []string{}, []string{}, []string{})
+}
+
+// ErrKumaCoreComponentFail is the error when core kuma component processing fails
+func ErrAppMeshCoreComponentFail(err error) error {
+	return errors.New(ErrAppMeshCoreComponentFailCode, errors.Alert, []string{"error in kuma core component"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrProcessOAM is a generic error which is thrown when an OAM operations fails
+func ErrProcessOAM(err error) error {
+	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
 }

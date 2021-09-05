@@ -81,6 +81,23 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(appMesh, e)
+	case internalconfig.LabelNamespace:
+		go func(hh *AppMesh, ee *adapter.Event) {
+			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			operation := "enabled"
+			if opReq.IsDeleteOperation {
+				operation = "removed"
+			}
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
+			ee.Details = fmt.Sprintf("APP-MESH-INJECTION label %s on %s namespace", operation, opReq.Namespace)
+			hh.StreamInfo(e)
+		}(appMesh, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
