@@ -1,63 +1,107 @@
-// Copyright 2019 Layer5.io
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
-	"flag"
 	"fmt"
-	"net"
 	"os"
+	"path"
+	"time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
+	//"github.com/aws/aws-sdk-go/service/appmesh"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/layer5io/meshery-istio/istio"
-	mesh "github.com/layer5io/meshery-istio/meshes"
+	"github.com/layer5io/meshery-adapter-library/adapter"
+	"github.com/layer5io/meshery-adapter-library/api/grpc"
+	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
+	"github.com/layer5io/meshery-app-mesh/app_mesh"
+	"github.com/layer5io/meshery-app-mesh/internal/config"
+	"github.com/layer5io/meshkit/logger"
+	// "github.com/layer5io/meshkit/tracing"
 )
 
 var (
-	gRPCPort = flag.Int("grpc-port", 10005, "The gRPC server port")
+	serviceName = "app-mesh-adapter"
+	version     = "none"
+	gitsha      = "none"
 )
 
-var log grpclog.LoggerV2
-
-func init() {
-	log = grpclog.NewLoggerV2(os.Stdout, os.Stdout, os.Stdout)
-	grpclog.SetLoggerV2(log)
+func isDebug() bool {
+	return os.Getenv("DEBUG") == "true"
 }
 
-func main() {
-	flag.Parse()
-
-	if os.Getenv("DEBUG") == "true" {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-
-	addr := fmt.Sprintf(":%d", *gRPCPort)
-	lis, err := net.Listen("tcp", addr)
+// creates the ~/.meshery directory
+func init() {
+	err := os.MkdirAll(path.Join(config.RootPath(), "bin"), 0750)
 	if err != nil {
-		logrus.Fatalln("Failed to listen:", err)
+		fmt.Println(err)
+		os.Exit(0)
 	}
-	s := grpc.NewServer(
-	// grpc.Creds(credentials.NewServerTLSFromCert(&insecure.Cert)),
-	)
-	mesh.RegisterMeshServiceServer(s, &istio.IstioClient{})
+}
 
-	// Serve gRPC Server
-	logrus.Infof("Serving gRPC on %s", addr)
-	logrus.Fatal(s.Serve(lis))
+// main is the entrypoint of the adaptor
+func main() {
+
+	// Initialize Logger instance
+	log, err := logger.New(serviceName, logger.Options{
+		Format:     logger.SyslogLogFormat,
+		DebugLevel: isDebug(),
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	err = os.Setenv("KUBECONFIG", path.Join(
+		config.KubeConfig[configprovider.FilePath],
+		fmt.Sprintf("%s.%s", config.KubeConfig[configprovider.FileName], config.KubeConfig[configprovider.FileType])),
+	)
+
+	if err != nil {
+		// Fail silently
+		log.Warn(err)
+	}
+
+	// Initialize application specific configs and dependencies
+	// App and request config
+	cfg, err := config.New(configprovider.InMemKey)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	service := &grpc.Service{}
+	err = cfg.GetObject(adapter.ServerKey, service)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	kubeconfigHandler, err := config.NewKubeconfigBuilder(configprovider.ViperKey)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	// // Initialize Tracing instance
+	// tracer, err := tracing.New(service.Name, service.TraceURL)
+	// if err != nil {
+	//      log.Err("Tracing Init Failed", err.Error())
+	//      os.Exit(1)
+	// }
+
+	// Initialize Handler intance
+	handler := app_mesh.New(cfg, log, kubeconfigHandler)
+	handler = adapter.AddLogger(log, handler)
+
+	service.Handler = handler
+	service.Channel = make(chan interface{}, 10)
+	service.StartedAt = time.Now()
+	service.Version = version
+	service.GitSHA = gitsha
+
+	// Server Initialization
+	log.Info("Adaptor Listening at port: ", service.Port)
+	err = grpc.Start(service, nil)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 }
