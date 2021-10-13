@@ -20,6 +20,7 @@ func (appMesh *AppMesh) installAppMesh(del bool, version, namespace string) (str
 	appMesh.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	appMesh.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
 
+	appMesh.Log.Info(fmt.Sprintf("Requested install of version: %s", version))
 	st := status.Installing
 	if del {
 		st = status.Removing
