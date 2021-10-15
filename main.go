@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	//"github.com/aws/aws-sdk-go/service/appmesh"
@@ -14,7 +15,10 @@ import (
 	"github.com/layer5io/meshery-app-mesh/app_mesh"
 	"github.com/layer5io/meshery-app-mesh/internal/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils/manifests"
+
 	// "github.com/layer5io/meshkit/tracing"
+	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 var (
@@ -96,6 +100,7 @@ func main() {
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
+	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
 
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)
@@ -104,4 +109,78 @@ func main() {
 		log.Error(err)
 		os.Exit(1)
 	}
+}
+func registerDynamicCapabilities(port string, log logger.Handler) {
+	registerWorkloads(port, log)
+	//Start the ticker
+	const reRegisterAfter = 24
+	ticker := time.NewTicker(reRegisterAfter * time.Hour)
+	for {
+		<-ticker.C
+		registerWorkloads(port, log)
+	}
+
+}
+func registerWorkloads(port string, log logger.Handler) {
+	release, err := config.GetLatestReleases(1)
+	if err != nil {
+		log.Info("Could not get latest stable release")
+	}
+	var version string
+	if len(release) > 0 {
+		version = release[0].TagName
+	} else {
+		version = "Unknown" //The registration should continue even if the version could not have been found because the URL is independent of it
+	}
+	log.Info("Registering latest workload components for version ", version)
+	// Register workloads
+	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
+		TimeoutInMinutes: 30,
+		URL:              "https://raw.githubusercontent.com/aws/eks-charts/master/stable/appmesh-controller/crds/crds.yaml",
+		GenerationMethod: adapter.Manifests,
+		Config: manifests.Config{
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_APP_MESH)],
+			MeshVersion: version,
+			Filter: manifests.CrdFilter{
+				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
+				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
+				VersionFilter: []string{"$[0]..spec.versions[0]"},
+				GroupFilter:   []string{"$[0]..spec"},
+				SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
+				ItrFilter:     []string{"$[?(@.spec.names.kind"},
+				ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
+				VField:        "name",
+				GField:        "group",
+			},
+		},
+		Operation: config.AppMeshOperation,
+	}); err != nil {
+		log.Info(err.Error())
+		return
+	}
+	log.Info("Latest workload components successfully registered.")
+}
+
+func mesheryServerAddress() string {
+	meshReg := os.Getenv("MESHERY_SERVER")
+
+	if meshReg != "" {
+		if strings.HasPrefix(meshReg, "http") {
+			return meshReg
+		}
+
+		return "http://" + meshReg
+	}
+
+	return "http://localhost:9081"
+}
+
+func serviceAddress() string {
+	svcAddr := os.Getenv("SERVICE_ADDR")
+
+	if svcAddr != "" {
+		return svcAddr
+	}
+
+	return "mesherylocal.layer5.io"
 }
