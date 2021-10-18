@@ -50,6 +50,12 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 	}
 
 	appMesh.Log.Info("Installing using helm charts...")
+	var act mesherykube.HelmChartAction
+	if del {
+		act = mesherykube.UNINSTALL
+	} else {
+		act = mesherykube.INSTALL
+	}
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: repo,
@@ -57,7 +63,7 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 			AppVersion: version,
 		},
 		Namespace:       namespace,
-		Delete:          del,
+		Action:          act,
 		CreateNamespace: true,
 	})
 	if err != nil {
