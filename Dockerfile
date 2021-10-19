@@ -12,7 +12,7 @@ RUN go mod download
 # Copy the go source
 COPY main.go main.go
 COPY internal/ internal/
-COPY app_mesh/ app_mesh/
+COPY appmesh/ appmesh/
 # Build
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-app-mesh main.go
 
