@@ -7,7 +7,7 @@ import (
 var (
 	// ErrCustomOperationCode should really have an error code defined by now.
 	ErrCustomOperationCode = "appmesh_test_code"
-	// ErrInstallNginxCode provisioning failure
+	// ErrInstallAppMeshCode provisioning failure
 	ErrInstallAppMeshCode = "appmesh_test_code"
 	// ErrMeshConfigCode   service mesh configuration failure
 	ErrMeshConfigCode = "appmesh_test_code"

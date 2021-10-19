@@ -11,7 +11,7 @@ import (
 // CompHandler type functions handle OAM components
 type CompHandler func(*AppMesh, v1alpha1.Component, bool) (string, error)
 
-// HandlerComponents handler the processing of OAM components
+// HandleComponents handles the processing of OAM components
 func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
 	var errs []error
 	var msgs []string
