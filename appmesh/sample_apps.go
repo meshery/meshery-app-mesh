@@ -70,6 +70,8 @@ func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates [
 }
 */
 
+// LoadNamespaceToMesh enables sidecar injection on by labelling requested
+// namespace
 func (appMesh *AppMesh) LoadNamespaceToMesh(namespace string, remove bool) error {
 	ns, err := appMesh.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {

@@ -1,3 +1,4 @@
+// Package appmesh stores common operations
 package appmesh
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
+// AppMesh is the app-mesh adapter. It embeds adapter.Adapter
 type AppMesh struct {
 	adapter.Adapter
 }
@@ -27,6 +29,7 @@ func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.
 	}
 }
 
+// ApplyOperation applies the requested operation on app-mesh
 func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 
 	operations := make(adapter.Operations)
