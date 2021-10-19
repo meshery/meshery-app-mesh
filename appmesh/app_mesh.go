@@ -1,4 +1,4 @@
-package app_mesh
+package appmesh
 
 import (
 	"context"

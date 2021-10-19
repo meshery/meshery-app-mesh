@@ -1,4 +1,4 @@
-package app_mesh
+package appmesh
 
 import (
 	"github.com/layer5io/meshkit/errors"
@@ -26,12 +26,20 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "replace"
 
+	// ErrParseAppMeshCoreComponentCode represents the error code
+	// when app-mesh core components can't be parsed
 	ErrParseAppMeshCoreComponentCode = "replace"
 
+	// ErrAppMeshCoreComponentFailCode represents error code when
+	// there is an error parsing components
 	ErrAppMeshCoreComponentFailCode = "replace"
 
+	// ErrInvalidOAMComponentTypeCode represents error code when
+	// invalid OAM components are registerd
 	ErrInvalidOAMComponentTypeCode = "replace"
 
+	// ErrProcessOAMCode represents error code while parsing OAM
+	// components
 	ErrProcessOAMCode = "replace"
 
 	// ErrOpInvalid is an error when an invalid operation is requested

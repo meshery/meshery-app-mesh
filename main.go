@@ -12,13 +12,13 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
-	"github.com/layer5io/meshery-app-mesh/app_mesh"
+	"github.com/layer5io/meshery-app-mesh/appmesh"
 	"github.com/layer5io/meshery-app-mesh/internal/config"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/utils/manifests"
 
 	// "github.com/layer5io/meshkit/tracing"
-	"github.com/layer5io/meshery-app-mesh/app_mesh/oam"
+	"github.com/layer5io/meshery-app-mesh/appmesh/oam"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
@@ -93,7 +93,7 @@ func main() {
 	// }
 
 	// Initialize Handler intance
-	handler := app_mesh.New(cfg, log, kubeconfigHandler)
+	handler := appmesh.New(cfg, log, kubeconfigHandler)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
