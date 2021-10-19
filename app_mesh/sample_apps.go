@@ -59,7 +59,7 @@ func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates [
 func (appMesh *AppMesh) LoadNamespaceToMesh(namespace string, remove bool) error {
 	ns, err := appMesh.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
-		return err
+		return ErrLoadNamespaceToMesh(err)
 	}
 
 	if ns.ObjectMeta.Labels == nil {
@@ -74,7 +74,7 @@ func (appMesh *AppMesh) LoadNamespaceToMesh(namespace string, remove bool) error
 
 	_, err = appMesh.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 	if err != nil {
-		return err
+		return ErrLoadNamespaceToMesh(err)
 	}
 	return nil
 }

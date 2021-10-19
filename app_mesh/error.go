@@ -17,6 +17,9 @@ var (
 	ErrStreamEventCode = "appmesh_test_code"
 	// ErrSampleAppCode    failure
 	ErrSampleAppCode = "appmesh_test_code"
+	// ErrLoadNamespaceToMeshCode represents the error
+	// which is generated when the namespace could not be labelled and updated
+	ErrLoadNamespaceToMeshCode = "appmesh_test_code"
 	// ErrOpInvalidCode failure
 	ErrOpInvalidCode = "appmesh_test_code"
 	// ErrNilClientCode represents the error code which is
@@ -95,4 +98,8 @@ func ErrAppMeshCoreComponentFail(err error) error {
 // ErrProcessOAM is a generic error which is thrown when an OAM operations fails
 func ErrProcessOAM(err error) error {
 	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
+}
+
+func ErrLoadNamespaceToMesh(err error) error {
+	return errors.New(ErrLoadNamespaceToMeshCode, errors.Alert, []string{"Could not label the appropriate namespace"}, []string{err.Error()}, []string{}, []string{})
 }
