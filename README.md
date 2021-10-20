@@ -15,7 +15,7 @@
 
 </div>
 
- p style="clear:both;">
+<p style="clear:both;">
 <h2><a href="https://meshery.layer5.io/docs">Open Service Mesh</a></h2>
 <a href="https://aws.amazon.com/app-mesh/">
  <img src=".github/img/readme/aws-app-mesh.svg" style="margin:10px;" width="125px" 
