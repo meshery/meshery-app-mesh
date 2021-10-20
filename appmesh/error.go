@@ -1,4 +1,4 @@
-package app_mesh
+package appmesh
 
 import (
 	"github.com/layer5io/meshkit/errors"
@@ -7,7 +7,7 @@ import (
 var (
 	// ErrCustomOperationCode should really have an error code defined by now.
 	ErrCustomOperationCode = "appmesh_test_code"
-	// ErrInstallNginxCode provisioning failure
+	// ErrInstallAppMeshCode provisioning failure
 	ErrInstallAppMeshCode = "appmesh_test_code"
 	// ErrMeshConfigCode   service mesh configuration failure
 	ErrMeshConfigCode = "appmesh_test_code"
@@ -29,13 +29,25 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "replace"
 
+	// ErrParseAppMeshCoreComponentCode represents the error code
+	// when app-mesh core components can't be parsed
 	ErrParseAppMeshCoreComponentCode = "replace"
 
+	// ErrAppMeshCoreComponentFailCode represents error code when
+	// there is an error parsing components
 	ErrAppMeshCoreComponentFailCode = "replace"
 
+	// ErrInvalidOAMComponentTypeCode represents error code when
+	// invalid OAM components are registerd
 	ErrInvalidOAMComponentTypeCode = "replace"
 
+	// ErrProcessOAMCode represents error code while parsing OAM
+	// components
 	ErrProcessOAMCode = "replace"
+
+	// ErrAddonFromTemplateCode represents the errors which are generated
+	// during addon deployment process
+	ErrAddonFromTemplateCode = "replace"
 
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
@@ -80,9 +92,9 @@ func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrParseKumaCoreComponent is the error when kuma core component manifest parsing fails
+// ErrParseAppMeshCoreComponent is the error when app-mesh core component manifest parsing fails
 func ErrParseAppMeshCoreComponent(err error) error {
-	return errors.New(ErrParseAppMeshCoreComponentCode, errors.Alert, []string{"kuma core component manifest parsing failing"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrParseAppMeshCoreComponentCode, errors.Alert, []string{"app-mesh core component manifest parsing failing"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrInvalidOAMComponentType is the error when the OAM component name is not valid
@@ -90,9 +102,9 @@ func ErrInvalidOAMComponentType(compName string) error {
 	return errors.New(ErrInvalidOAMComponentTypeCode, errors.Alert, []string{"invalid OAM component name: ", compName}, []string{}, []string{}, []string{})
 }
 
-// ErrKumaCoreComponentFail is the error when core kuma component processing fails
+// ErrAppMeshCoreComponentFail is the error when core appmesh component processing fails
 func ErrAppMeshCoreComponentFail(err error) error {
-	return errors.New(ErrAppMeshCoreComponentFailCode, errors.Alert, []string{"error in kuma core component"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrAppMeshCoreComponentFailCode, errors.Alert, []string{"error in app-mesh core component"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrProcessOAM is a generic error which is thrown when an OAM operations fails
@@ -100,6 +112,12 @@ func ErrProcessOAM(err error) error {
 	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
 }
 
+// ErrLoadNamespaceToMesh identifies the inability to label the appropropriate namespace
 func ErrLoadNamespaceToMesh(err error) error {
 	return errors.New(ErrLoadNamespaceToMeshCode, errors.Alert, []string{"Could not label the appropriate namespace"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrAddonFromTemplate is the error for streaming event
+func ErrAddonFromTemplate(err error) error {
+	return errors.New(ErrAddonFromTemplateCode, errors.Alert, []string{"Error with addon install operation"}, []string{err.Error()}, []string{}, []string{})
 }

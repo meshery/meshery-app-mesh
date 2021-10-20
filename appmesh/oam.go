@@ -1,4 +1,4 @@
-package app_mesh
+package appmesh
 
 import (
 	"fmt"
@@ -8,8 +8,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// CompHandler type functions handle OAM components
 type CompHandler func(*AppMesh, v1alpha1.Component, bool) (string, error)
 
+// HandleComponents handles the processing of OAM components
 func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
 	var errs []error
 	var msgs []string
