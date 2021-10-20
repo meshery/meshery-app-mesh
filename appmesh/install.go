@@ -2,6 +2,8 @@ package appmesh
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -11,7 +13,9 @@ import (
 
 const (
 	repo  = "https://aws.github.io/eks-charts"
-	chart = "appmesh-controller"
+	appMeshController = "appmesh-controller"
+	appMeshInject = "appmesh-inject"
+	appMeshGateway = "appmesh-gateway"
 )
 
 // Installs APP-MESH service mesh using helm charts.
@@ -56,10 +60,12 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 	} else {
 		act = mesherykube.INSTALL
 	}
+
+	// Install the controller
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: repo,
-			Chart:      chart,
+			Chart:      appMeshController,
 			AppVersion: version,
 		},
 		Namespace:       namespace,
@@ -70,7 +76,25 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 		return ErrApplyHelmChart(err)
 	}
 
-	return nil
+	// Install appmesh-injector. Only needed for controller versions older
+	// than 1.0.0
+	if controlPlaneVersion, err := strconv.Atoi(strings.TrimPrefix(version, "v")); controlPlaneVersion < 1 && err != nil {
+		err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+			ChartLocation: mesherykube.HelmChartLocation{
+				Repository: repo,
+				Chart:      appMeshInject,
+				AppVersion: version,
+			},
+			Namespace:       namespace,
+			Action:          act,
+			CreateNamespace: true,
+		})
+		if err != nil {
+			return ErrApplyHelmChart(err)
+		}
+	}
+
+	return err
 }
 
 func (appMesh *AppMesh) applyManifest(manifest []byte, isDel bool, namespace string) error {
