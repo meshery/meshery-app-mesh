@@ -42,6 +42,10 @@ var (
 	// components
 	ErrProcessOAMCode = "replace"
 
+	// ErrAddonFromTemplateCode represents the errors which are generated
+	// during addon deployment process
+	ErrAddonFromTemplateCode = "replace"
+
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -103,4 +107,9 @@ func ErrAppMeshCoreComponentFail(err error) error {
 // ErrProcessOAM is a generic error which is thrown when an OAM operations fails
 func ErrProcessOAM(err error) error {
 	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrAddonFromTemplate is the error for streaming event
+func ErrAddonFromTemplate(err error) error {
+	return errors.New(ErrAddonFromTemplateCode, errors.Alert, []string{"Error with addon install operation"}, []string{err.Error()}, []string{}, []string{})
 }
