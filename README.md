@@ -1,4 +1,4 @@
-<p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src=".github/img/readme/meshery-logo-tag-light-text-side.svg"  width="70%" /></a><br /><br /></p>
+<p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src=".github/img/readme/meshery-logo-tag-light-text-side.png"  width="70%" /></a><br /><br /></p>
 
 # Meshery Adapter for AWS App Mesh
 
