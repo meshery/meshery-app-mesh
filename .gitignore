@@ -10,8 +10,8 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-
+.github/img/.DS_Store
 
 .vscode
 
-meshery-istio
+meshery-app-mesh
