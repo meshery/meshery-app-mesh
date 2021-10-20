@@ -20,6 +20,13 @@ const (
 	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
+
+	// supported addons
+	PrometheusAddon = "prometheus-addon"
+	GrafanaAddon    = "grafana-addon"
+	JaegerAddon     = "jaeger-addon"
+	SpireAgent      = "spire-agent"
+	SpireServer     = "spire-server"
 )
 
 var (
