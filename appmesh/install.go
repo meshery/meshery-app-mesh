@@ -76,21 +76,6 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 		return ErrApplyHelmChart(err)
 	}
 
-	// Install appmesh-gateway
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		ChartLocation: mesherykube.HelmChartLocation{
-			Repository: repo,
-			Chart:      appMeshGateway,
-			AppVersion: version,
-		},
-		Namespace:       namespace,
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
-
 	// Install appmesh-injector. Only needed for controller versions older
 	// than 1.0.0
 	if controlPlaneVersion, err := strconv.Atoi(strings.TrimPrefix(version, "v")); controlPlaneVersion < 1 && err != nil {
