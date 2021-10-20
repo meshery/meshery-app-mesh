@@ -27,6 +27,7 @@ const (
 	JaegerAddon     = "jaeger-addon"
 	SpireAgent      = "spire-agent"
 	SpireServer     = "spire-server"
+	AppMeshGateway  = "appmesh-gateway"
 )
 
 var (

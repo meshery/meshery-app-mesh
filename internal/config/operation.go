@@ -76,5 +76,13 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		},
 	}
 
+	dev[AppMeshGateway] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: app-mesh-gateway",
+		Templates: []adapter.Template{
+			"appmesh-gateway",
+		},
+	}
+
 	return dev
 }
