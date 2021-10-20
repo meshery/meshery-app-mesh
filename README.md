@@ -1,7 +1,4 @@
 <p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src=".github/img/readme/meshery-logo-tag-light-text-side.png"  width="70%" /></a><br /><br /></p>
-
-# Meshery Adapter for AWS App Mesh
-
 <div align="center">
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-app-mesh.svg)](https://hub.docker.com/r/layer5/meshery-app-mesh)
@@ -17,22 +14,21 @@
 </div>
 
 <p style="clear:both;">
-<h2><a href="https://meshery.layer5.io/docs">Open Service Mesh</a></h2>
+# Meshery Adapter for AWS App Mesh
+<h2><a href="https://meshery.layer5.io/docs">AWS App Mesh</a></h2>
 <a href="https://aws.amazon.com/app-mesh/">
  <img src=".github/img/readme/aws-app-mesh.svg" style="margin:10px;" width="125px" 
    alt="Meshery Adapter for AWS App Mesh" align="left" />
 </a>
 <p>
 <a href="https://aws.amazon.com/app-mesh/">AWS App Mesh</a> makes it easy to monitor, control, and debug the communications between services. App Mesh uses Envoy, an open source service mesh proxy which is deployed alongside your microservice containers. App Mesh is integrated with AWS services for monitoring and tracing, and it works with many popular third-party tools. App Mesh can be used with microservice containers managed by Amazon ECS, Amazon EKS, AWS Fargate, Kubernetes running on AWS, and services running on Amazon EC2.
-<
- <br /> <br /> <br /> <br /> <br />
 </p>
 
 <h2><a href="https://layer5.io/meshery">Meshery</a></h2>
 <a href="https://meshery.io"><img src=".github/img/readme/meshery-logo-light-text.svg"
 style="margin:10px;" width="125px" 
 alt="Meshery - the Service Mesh Management Plane" align="left" /></a>
-<a href="https://meshery.io">Meshery</a> is the multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh. 
+<a href="https://meshery.io">Meshery</a> is the multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh.
 <br /><br /><p align="center"><i>If you’re using Meshery or if you like the project, please <a href="https://github.com/layer5io/meshery/stargazers">★</a> star this repository to show your support! 🤩</i></p>
 </p>
 
