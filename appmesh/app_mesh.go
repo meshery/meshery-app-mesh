@@ -60,30 +60,6 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			hh.StreamInfo(e)
 		}(appMesh, e)
 
-	case common.SmiConformanceOperation:
-		go func(hh *AppMesh, ee *adapter.Event) {
-			name := operations[opReq.OperationName].Description
-			_, err := hh.RunSMITest(adapter.SMITestOptions{
-				Ctx:         context.TODO(),
-				OperationID: ee.Operationid,
-				Manifest:    string(operations[opReq.OperationName].Templates[0]),
-				Namespace:   "meshery",
-				Labels:      make(map[string]string),
-				Annotations: map[string]string{
-					"appmesh.k8s.aws/sidecarInjectorWebhook": "enabled",
-				},
-			})
-
-			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
-				return
-			}
-			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
-			ee.Details = ""
-			hh.StreamInfo(e)
-		}(appMesh, e)
 	case internalconfig.LabelNamespace:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
@@ -101,6 +77,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = fmt.Sprintf("APP-MESH-INJECTION label %s on %s namespace", operation, opReq.Namespace)
 			hh.StreamInfo(e)
 		}(appMesh, e)
+
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
@@ -115,6 +92,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
 			hh.StreamInfo(e)
 		}(appMesh, e)
+		
 	case common.CustomOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
