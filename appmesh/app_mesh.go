@@ -77,7 +77,27 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = fmt.Sprintf("APP-MESH-INJECTION label %s on %s namespace", operation, opReq.Namespace)
 			hh.StreamInfo(e)
 		}(appMesh, e)
+	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon:
+		go func(hh *AppMesh, ee *adapter.Event) {
+			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
+			patches := make([]string, 0)
+			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, operations[opReq.OperationName].HelmConfig)
+			operation := "install"
+			if opReq.IsDeleteOperation {
+				operation = "uninstall"
+			}
 
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
+			hh.StreamInfo(e)
+		}(appMesh, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
@@ -92,7 +112,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
 			hh.StreamInfo(e)
 		}(appMesh, e)
-		
+
 	case common.CustomOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)

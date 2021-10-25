@@ -15,8 +15,11 @@ import (
 )
 
 const (
-	LabelNamespace = "label-namespace"
-
+	LabelNamespace   = "label-namespace"
+	ServicePatchFile = "service-patch-file"
+	// Addons that the adapter supports
+	PrometheusAddon = "appmesh-prometheus-addon"
+	GrafanaAddon    = "appmesh-grafana-addon"
 	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
