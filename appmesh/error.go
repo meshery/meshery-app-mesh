@@ -49,6 +49,7 @@ var (
 	// during addon deployment process
 	ErrAddonFromTemplateCode = "replace"
 
+	ErrAddonFromHelmCode = "replace"
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
 
@@ -120,4 +121,9 @@ func ErrLoadNamespaceToMesh(err error) error {
 // ErrAddonFromTemplate is the error for streaming event
 func ErrAddonFromTemplate(err error) error {
 	return errors.New(ErrAddonFromTemplateCode, errors.Alert, []string{"Error with addon install operation"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrAddonFromTemplate is the error for streaming event
+func ErrAddonFromHelm(err error) error {
+	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{}, []string{})
 }

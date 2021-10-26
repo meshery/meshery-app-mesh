@@ -30,7 +30,18 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			URL: "https://aws.github.io/eks-charts/appmesh-prometheus-1.0.0.tgz",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName:      "prometheus",
+			ServiceName:      "appmesh-prometheus",
+			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
+		},
+	}
+	dev[GrafanaAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Add-on: Grafana",
+		HelmConfig: adapter.HelmConfig{
+			URL: "https://aws.github.io/eks-charts/appmesh-grafana-1.0.4.tgz",
+		},
+		AdditionalProperties: map[string]string{
+			ServiceName:      "appmesh-grafana",
 			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
 		},
 	}
