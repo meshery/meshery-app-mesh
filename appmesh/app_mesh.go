@@ -8,6 +8,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/status"
+	"github.com/layer5io/meshery-app-mesh/internal/config"
 	internalconfig "github.com/layer5io/meshery-app-mesh/internal/config"
 	meshkitCfg "github.com/layer5io/meshkit/config"
 	"github.com/layer5io/meshkit/logger"
@@ -80,9 +81,10 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
+			helmChartURL := operations[opReq.OperationName].AdditionalProperties[config.HelmChartURL]
 			patches := make([]string, 0)
 			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
-			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, operations[opReq.OperationName].HelmConfig)
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL)
 			operation := "install"
 			if opReq.IsDeleteOperation {
 				operation = "uninstall"

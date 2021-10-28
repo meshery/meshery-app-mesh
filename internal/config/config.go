@@ -20,6 +20,7 @@ const (
 	// Addons that the adapter supports
 	PrometheusAddon = "appmesh-prometheus-addon"
 	GrafanaAddon    = "appmesh-grafana-addon"
+	HelmChartURL    = "helm-chart-url"
 	// OAM Metadata constants
 	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
 	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"

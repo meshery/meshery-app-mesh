@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshkit/utils"
 	kubernetes "github.com/layer5io/meshkit/utils/kubernetes"
@@ -12,14 +11,15 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func (appMesh *AppMesh) installAddon(ns string, del bool, svcName string, patches []string, hc adapter.HelmConfig) (string, error) {
+func (appMesh *AppMesh) installAddon(ns string, del bool, svcName string, patches []string, helmChartURL string) (string, error) {
+
 	st := status.Installing
 
 	if del {
 		st = status.Removing
 	}
 	err := appMesh.MesheryKubeclient.ApplyHelmChart(kubernetes.ApplyHelmChartConfig{
-		URL:       hc.URL,
+		URL:       helmChartURL,
 		Namespace: ns,
 	})
 	if err != nil {
