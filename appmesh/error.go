@@ -123,7 +123,7 @@ func ErrAddonFromTemplate(err error) error {
 	return errors.New(ErrAddonFromTemplateCode, errors.Alert, []string{"Error with addon install operation"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrAddonFromTemplate is the error for streaming event
+// ErrAddonFromHelm is the error for installing addons through helm chart
 func ErrAddonFromHelm(err error) error {
-	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrAddonFromHelmCode, errors.Alert, []string{"Error with addon install operation by helm chart"}, []string{err.Error()}, []string{"The helm chart URL in additional properties of addon Operation might be incorrect", "The helm installation failed due to any other reason"}, []string{})
 }

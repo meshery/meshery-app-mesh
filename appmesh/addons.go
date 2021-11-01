@@ -23,7 +23,7 @@ func (appMesh *AppMesh) installAddon(ns string, del bool, svcName string, patche
 		Namespace: ns,
 	})
 	if err != nil {
-		return st, err //CHANGE TO MESHKIT ERRROR
+		return st, ErrAddonFromHelm(err)
 	}
 
 	for _, patch := range patches {
