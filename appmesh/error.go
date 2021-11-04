@@ -49,6 +49,7 @@ var (
 	// during addon deployment process
 	ErrAddonFromTemplateCode = "replace"
 
+	//ErrAddonFromHelmCode represents the error while installing addons through helm charts
 	ErrAddonFromHelmCode = "replace"
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
