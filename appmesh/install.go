@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	repo  = "https://aws.github.io/eks-charts"
+	repo              = "https://aws.github.io/eks-charts"
 	appMeshController = "appmesh-controller"
-	appMeshInject = "appmesh-inject"
-	appMeshGateway = "appmesh-gateway"
+	appMeshInject     = "appmesh-inject"
+	appMeshGateway    = "appmesh-gateway"
 )
 
 // Installs APP-MESH service mesh using helm charts.
