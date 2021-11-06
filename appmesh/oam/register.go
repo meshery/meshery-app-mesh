@@ -22,7 +22,6 @@ type schemaDefinitionPathSet struct {
 	oamDefinitionPath string
 	jsonSchemaPath    string
 	name              string
-	version           string
 }
 
 // RegisterWorkloads will register all of the workload definitions

@@ -115,10 +115,11 @@ func main() {
 }
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
+	log.Info("Starting static component registration...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-
+	log.Info("Static Component registration completed")
 	// // Register traits
 	// if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 	// 	log.Info(err.Error())
