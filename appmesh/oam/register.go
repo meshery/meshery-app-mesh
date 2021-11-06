@@ -14,9 +14,11 @@ var (
 	basePath, _  = os.Getwd()
 	workloadPath = filepath.Join(basePath, "templates", "oam", "workloads")
 	// traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
-	AvailableVersions = map[string]bool{}
-	pathSets          = []schemaDefinitionPathSet{}
+	pathSets = []schemaDefinitionPathSet{}
 )
+
+// AvailableVersions denote the component versions available statically
+var AvailableVersions = map[string]bool{}
 
 type schemaDefinitionPathSet struct {
 	oamDefinitionPath string
