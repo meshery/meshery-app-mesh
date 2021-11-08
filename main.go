@@ -115,10 +115,11 @@ func main() {
 }
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
+	log.Info("Starting static component registration...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-
+	log.Info("Static Component registration completed")
 	// // Register traits
 	// if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 	// 	log.Info(err.Error())
@@ -146,6 +147,11 @@ func registerWorkloads(port string, log logger.Handler) {
 		version = release[0].TagName
 	} else {
 		version = "Unknown" //The registration should continue even if the version could not have been found because the URL is independent of it
+	}
+	if oam.AvailableVersions[version] {
+		log.Info("Latest(", version, ") component already available via static component generation\n")
+		log.Info("Skipping dynamic component registeration")
+		return
 	}
 	log.Info("Registering latest workload components for version ", version)
 	// Register workloads
