@@ -19,7 +19,7 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -
 FROM alpine:3.14 as jsonschema-util
 RUN apk add --no-cache curl
 WORKDIR /
-RUN curl -LO https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/v0.1.0/kubeopenapi-jsonschema
+RUN curl -LO https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/v0.1.2/kubeopenapi-jsonschema
 RUN chmod +x /kubeopenapi-jsonschema
 
 # Use distroless as minimal base image to package the manager binary
