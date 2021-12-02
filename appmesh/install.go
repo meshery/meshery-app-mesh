@@ -52,7 +52,7 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 	if kClient == nil {
 		return ErrNilClient
 	}
-
+	strings.TrimPrefix(version, "v")
 	appMesh.Log.Info("Installing using helm charts...")
 	var act mesherykube.HelmChartAction
 	if del {
@@ -60,13 +60,16 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 	} else {
 		act = mesherykube.INSTALL
 	}
-
+	cv, err := mesherykube.HelmAppVersionToChartVersion(repo, appMeshController, version)
+	if err != nil {
+		return ErrApplyHelmChart(err)
+	}
 	// Install the controller
-	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		ChartLocation: mesherykube.HelmChartLocation{
 			Repository: repo,
 			Chart:      appMeshController,
-			AppVersion: version,
+			Version:    cv,
 		},
 		Namespace:       namespace,
 		Action:          act,
@@ -78,12 +81,12 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 
 	// Install appmesh-injector. Only needed for controller versions older
 	// than 1.0.0
-	if controlPlaneVersion, err := strconv.Atoi(strings.TrimPrefix(version, "v")); controlPlaneVersion < 1 && err != nil {
+	if controlPlaneVersion, err := strconv.Atoi(strings.TrimPrefix(version, "v")[:1]); controlPlaneVersion < 1 && err != nil {
 		err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 			ChartLocation: mesherykube.HelmChartLocation{
 				Repository: repo,
 				Chart:      appMeshInject,
-				AppVersion: version,
+				AppVersion: "", //defaults to latest
 			},
 			Namespace:       namespace,
 			Action:          act,

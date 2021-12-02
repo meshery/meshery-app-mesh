@@ -8,9 +8,11 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/status"
+	"github.com/layer5io/meshery-app-mesh/appmesh/oam"
 	internalconfig "github.com/layer5io/meshery-app-mesh/internal/config"
 	meshkitCfg "github.com/layer5io/meshkit/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 )
 
 // AppMesh is the app-mesh adapter. It embeds adapter.Adapter
@@ -132,4 +134,54 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 
 	}
 	return nil
+}
+
+// ProcessOAM handles the grpc invocation for handling OAM objects
+func (app *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
+	var comps []v1alpha1.Component
+	for _, acomp := range oamReq.OamComps {
+		comp, err := oam.ParseApplicationComponent(acomp)
+		if err != nil {
+			app.Log.Error(ErrParseOAMComponent)
+			continue
+		}
+
+		comps = append(comps, comp)
+	}
+
+	config, err := oam.ParseApplicationConfiguration(oamReq.OamConfig)
+	if err != nil {
+		app.Log.Error(ErrParseOAMConfig)
+	}
+
+	// If operation is delete then first HandleConfiguration and then handle the deployment
+	if oamReq.DeleteOp {
+		// Process configuration
+		msg2, err := app.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+		if err != nil {
+			return msg2, ErrProcessOAM(err)
+		}
+
+		// Process components
+		msg1, err := app.HandleComponents(comps, oamReq.DeleteOp)
+		if err != nil {
+			return msg1 + "\n" + msg2, ErrProcessOAM(err)
+		}
+
+		return msg1 + "\n" + msg2, nil
+	}
+
+	// Process components
+	msg1, err := app.HandleComponents(comps, oamReq.DeleteOp)
+	if err != nil {
+		return msg1, ErrProcessOAM(err)
+	}
+
+	// Process configuration
+	msg2, err := app.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+	if err != nil {
+		return msg1 + "\n" + msg2, ErrProcessOAM(err)
+	}
+
+	return msg1 + "\n" + msg2, nil
 }
