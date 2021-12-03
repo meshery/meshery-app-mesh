@@ -52,7 +52,7 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 	if kClient == nil {
 		return ErrNilClient
 	}
-	strings.TrimPrefix(version, "v")
+	version = strings.TrimPrefix(version, "v")
 	appMesh.Log.Info("Installing using helm charts...")
 	var act mesherykube.HelmChartAction
 	if del {

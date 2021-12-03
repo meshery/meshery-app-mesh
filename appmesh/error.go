@@ -52,8 +52,12 @@ var (
 	//ErrAddonFromHelmCode represents the error while installing addons through helm charts
 	ErrAddonFromHelmCode = "replace"
 
+	// ErrParseOAMComponent represents the error which is
+	// generated during the OAM component parsing
 	ErrParseOAMComponentCode = "replace"
 
+	// ErrParseOAMConfig represents the error which is
+	// generated during the OAM configuration parsing
 	ErrParseOAMConfigCode = "replace"
 	// ErrOpInvalid is an error when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})

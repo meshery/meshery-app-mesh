@@ -137,12 +137,12 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 }
 
 // ProcessOAM handles the grpc invocation for handling OAM objects
-func (app *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
+func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
 		if err != nil {
-			app.Log.Error(ErrParseOAMComponent)
+			appMesh.Log.Error(ErrParseOAMComponent)
 			continue
 		}
 
@@ -151,19 +151,19 @@ func (app *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 
 	config, err := oam.ParseApplicationConfiguration(oamReq.OamConfig)
 	if err != nil {
-		app.Log.Error(ErrParseOAMConfig)
+		appMesh.Log.Error(ErrParseOAMConfig)
 	}
 
 	// If operation is delete then first HandleConfiguration and then handle the deployment
 	if oamReq.DeleteOp {
 		// Process configuration
-		msg2, err := app.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+		msg2, err := appMesh.HandleApplicationConfiguration(config, oamReq.DeleteOp)
 		if err != nil {
 			return msg2, ErrProcessOAM(err)
 		}
 
 		// Process components
-		msg1, err := app.HandleComponents(comps, oamReq.DeleteOp)
+		msg1, err := appMesh.HandleComponents(comps, oamReq.DeleteOp)
 		if err != nil {
 			return msg1 + "\n" + msg2, ErrProcessOAM(err)
 		}
@@ -172,13 +172,13 @@ func (app *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 	}
 
 	// Process components
-	msg1, err := app.HandleComponents(comps, oamReq.DeleteOp)
+	msg1, err := appMesh.HandleComponents(comps, oamReq.DeleteOp)
 	if err != nil {
 		return msg1, ErrProcessOAM(err)
 	}
 
 	// Process configuration
-	msg2, err := app.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+	msg2, err := appMesh.HandleApplicationConfiguration(config, oamReq.DeleteOp)
 	if err != nil {
 		return msg1 + "\n" + msg2, ErrProcessOAM(err)
 	}
