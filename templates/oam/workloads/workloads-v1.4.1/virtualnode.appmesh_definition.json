@@ -1,0 +1,19 @@
+{
+  "apiVersion": "core.oam.dev/v1alpha1",
+  "kind": "WorkloadDefinition",
+  "metadata": {
+    "name": "VirtualNode.APP_MESH"
+  },
+  "spec": {
+    "definitionRef": {
+      "name": "virtualnode.appmesh.meshery.layer5.io"
+    },
+    "metadata": {
+      "@type": "pattern.meshery.io/mesh/workload",
+      "meshVersion": "v1.4.1",
+      "meshName": "APP_MESH",
+      "k8sAPIVersion": "appmesh.k8s.aws/v1beta2",
+      "k8sKind": "VirtualNode"
+    }
+  }
+}
