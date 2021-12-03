@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
-	"sort"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 )
@@ -36,32 +34,18 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}
 
-	// Filter out the rc and alpha releases
-	result := make([]adapter.Version, limit)
-	r, err := regexp.Compile(`Release \d+(\.\d+){2,}$`)
-	if err != nil {
-		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
+	var releaseNames []adapter.Version
+
+	for _, r := range releases {
+		releaseNames = append(releaseNames, adapter.Version(r.TagName))
 	}
 
-	for _, release := range releases {
-		releaseStr := string(release.Name)
-		// fmt.Print(releaseStr)
-		// versionStr := strings.Split(releaseStr, " ")[1]
-		if r.MatchString(releaseStr) {
-			result = append(result, adapter.Version(releaseStr))
-		}
+	// Ensure that limit is always lesser than equal to the total
+	// number of releases
+	if limit > len(releaseNames) {
+		limit = len(releaseNames)
 	}
-
-	// Sort the result
-	sort.Slice(result, func(i, j int) bool {
-		return result[i] > result[j]
-	})
-
-	if limit > len(result) {
-		limit = len(result)
-	}
-
-	return result[:limit], nil
+	return releaseNames, nil
 }
 
 // GetLatestReleases fetches the latest releases from the aws/aws-app-mesh-controller-for-k8s repository
