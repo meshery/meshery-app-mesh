@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 1
       - name: Check if manifests for latest release exist
         run: |
-          if [ -d templates/oam/workloads/workloads-${{ steps.glrt.outputs.release }} ]
+          if [ -d templates/oam/workloads/${{ steps.glrt.outputs.release }} ]
           then
            echo "EXISTS=true" > $GITHUB_ENV
           else
@@ -63,7 +63,7 @@ jobs:
           make linux
       - name: Generate Workload definitions
         run: |
-          dirPath=../templates/oam/workloads/workloads-$NEW_APP_MESH_VERSION
+          dirPath=../templates/oam/workloads/$NEW_APP_MESH_VERSION
           cd util
           mkdir -p $dirPath
           meshName=appmesh
@@ -77,7 +77,7 @@ jobs:
             apiVersion=$(./kubeopenapi-jsonschema --location ~/app.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[].name" -o json | jq '.[]' | tr -d '"')
             apiGroup=$(./kubeopenapi-jsonschema --location ~/app.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
             ./kubeopenapi-jsonschema --location ~/app.yaml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
-            jq '.[]' > $dirPath/$nameLower.appmesh.meshery.layer5io.schema.json
+            jq '.[] | ."title" = "'$nameLower'"' > $dirPath/$nameLower.appmesh.meshery.layer5io.schema.json
             echo $template |\
             jq '
             ."metadata"."name" = "'$(printf %s.APP_MESH $nameUpper)'"
