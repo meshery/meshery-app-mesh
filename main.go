@@ -143,12 +143,12 @@ func registerWorkloads(port string, log logger.Handler) {
 	if err != nil {
 		log.Info("Could not get latest stable release")
 	}
-	var version string
 	if len(versions) == 0 {
-		version = "Unknown" //The registration should continue even if the version could not have been found because the URL is independent of it
-	} else {
-		version = versions[0]
+		log.Info("Could not register dynamic components.Latest version could not found")
+		return
 	}
+	version := versions[len(versions)-1]
+
 	if oam.AvailableVersions[version] {
 		log.Info("Latest(", version, ") component already available via static component generation\n")
 		log.Info("Skipping dynamic component registeration")
