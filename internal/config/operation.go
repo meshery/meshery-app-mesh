@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/meshes"
+	"github.com/layer5io/meshkit/utils"
 )
 
 var (
@@ -10,13 +11,16 @@ var (
 )
 
 func getOperations(dev adapter.Operations) adapter.Operations {
+	var adapterersions []adapter.Version
+	versions, _ := utils.GetLatestReleaseTagsSorted("aws", "aws-app-mesh-controller-for-k8s")
 
-	versions, _ := getLatestReleaseNames(3)
-
+	for _, v := range versions {
+		adapterersions = append(adapterersions, adapter.Version(v))
+	}
 	dev[AppMeshOperation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_INSTALL),
 		Description: "AWS App Mesh",
-		Versions:    versions,
+		Versions:    adapterersions,
 	}
 
 	dev[LabelNamespace] = &adapter.Operation{

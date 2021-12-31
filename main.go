@@ -15,6 +15,7 @@ import (
 	"github.com/layer5io/meshery-app-mesh/appmesh"
 	"github.com/layer5io/meshery-app-mesh/internal/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/manifests"
 
 	// "github.com/layer5io/meshkit/tracing"
@@ -138,16 +139,16 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 func registerWorkloads(port string, log logger.Handler) {
-	release, err := config.GetLatestReleases(1)
+	versions, err := utils.GetLatestReleaseTagsSorted("aws", "aws-app-mesh-controller-for-k8s")
 	if err != nil {
 		log.Info("Could not get latest stable release")
 	}
-	var version string
-	if len(release) > 0 {
-		version = release[0].TagName
-	} else {
-		version = "Unknown" //The registration should continue even if the version could not have been found because the URL is independent of it
+	if len(versions) == 0 {
+		log.Info("Could not register dynamic components.Latest version could not found")
+		return
 	}
+	version := versions[len(versions)-1]
+
 	if oam.AvailableVersions[version] {
 		log.Info("Latest(", version, ") component already available via static component generation\n")
 		log.Info("Skipping dynamic component registeration")
