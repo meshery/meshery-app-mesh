@@ -25,7 +25,7 @@ import (
 
 var (
 	serviceName = "app-mesh-adapter"
-	version     = "none"
+	version     = "edge"
 	gitsha      = "none"
 )
 
