@@ -9,10 +9,10 @@ import (
 )
 
 // CompHandler type functions handle OAM components
-type CompHandler func(*AppMesh, v1alpha1.Component, bool) (string, error)
+type CompHandler func(*AppMesh, v1alpha1.Component, bool, []string) (string, error)
 
 // HandleComponents handles the processing of OAM components
-func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
+func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
 
@@ -23,7 +23,7 @@ func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool)
 	for _, comp := range comps {
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
-			msg, err := handleAppMeshCoreComponent(appMesh, comp, isDel, "", "")
+			msg, err := handleAppMeshCoreComponent(appMesh, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
 				errs = append(errs, err)
 				continue
@@ -33,7 +33,7 @@ func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool)
 			continue
 		}
 
-		msg, err := fnc(appMesh, comp, isDel)
+		msg, err := fnc(appMesh, comp, isDel, kubeconfigs)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -50,14 +50,14 @@ func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool)
 }
 
 // HandleApplicationConfiguration handles the processing of OAM application configuration
-func (appMesh *AppMesh) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool) (string, error) {
+func (appMesh *AppMesh) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
 	for _, comp := range config.Spec.Components {
 		for _, trait := range comp.Traits {
 			if trait.Name == "automaticSidecarInjection.AppMesh" {
 				namespaces := castSliceInterfaceToSliceString(trait.Properties["namespaces"].([]interface{}))
-				if err := handleNamespaceLabel(appMesh, namespaces, isDel); err != nil {
+				if err := handleNamespaceLabel(appMesh, namespaces, isDel, kubeconfigs); err != nil {
 					errs = append(errs, err)
 				}
 			}
@@ -74,10 +74,10 @@ func (appMesh *AppMesh) HandleApplicationConfiguration(config v1alpha1.Configura
 
 }
 
-func handleNamespaceLabel(appMesh *AppMesh, namespaces []string, isDel bool) error {
+func handleNamespaceLabel(appMesh *AppMesh, namespaces []string, isDel bool, kubeconfigs []string) error {
 	var errs []error
 	for _, ns := range namespaces {
-		if err := appMesh.LoadNamespaceToMesh(ns, isDel); err != nil {
+		if err := appMesh.LoadNamespaceToMesh(ns, isDel, kubeconfigs); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -85,13 +85,13 @@ func handleNamespaceLabel(appMesh *AppMesh, namespaces []string, isDel bool) err
 	return mergeErrors(errs)
 }
 
-func handleComponentAppMesh(appMesh *AppMesh, comp v1alpha1.Component, isDel bool) (string, error) {
+func handleComponentAppMesh(appMesh *AppMesh, comp v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	// Get the kuma version from the settings
 	// we are sure that the version of kuma would be present
 	// because the configuration is already validated against the schema
 	version := comp.Spec.Settings["version"].(string)
 
-	msg, err := appMesh.installAppMesh(isDel, version, comp.Namespace)
+	msg, err := appMesh.installAppMesh(isDel, version, comp.Namespace, kubeconfigs)
 	if err != nil {
 		return fmt.Sprintf("%s: %s", comp.Name, msg), err
 	}
@@ -104,7 +104,8 @@ func handleAppMeshCoreComponent(
 	comp v1alpha1.Component,
 	isDel bool,
 	apiVersion,
-	kind string) (string, error) {
+	kind string,
+	kubeconfigs []string) (string, error) {
 	if apiVersion == "" {
 		apiVersion = getAPIVersionFromComponent(comp)
 		if apiVersion == "" {
@@ -143,7 +144,7 @@ func handleAppMeshCoreComponent(
 		msg = fmt.Sprintf("deleted %s config \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	}
 
-	return msg, appMesh.applyManifest(yamlByt, isDel, comp.Namespace)
+	return msg, appMesh.applyManifest(yamlByt, isDel, comp.Namespace, kubeconfigs)
 }
 
 func getAPIVersionFromComponent(comp v1alpha1.Component) string {
