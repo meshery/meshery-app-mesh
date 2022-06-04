@@ -10,7 +10,6 @@ import (
 	kubernetes "github.com/layer5io/meshkit/utils/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
 func (appMesh *AppMesh) installAddon(ns string, del bool, svcName string, patches []string, helmChartURL string, kubeconfigs []string) (string, error) {
@@ -30,7 +29,7 @@ func (appMesh *AppMesh) installAddon(ns string, del bool, svcName string, patche
 		wg.Add(1);
 		go func(config string) {
 			defer wg.Done()
-			kClient, err := mesherykube.New([]byte(config))
+			kClient, err := kubernetes.New([]byte(config))
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
