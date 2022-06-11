@@ -12,7 +12,9 @@ import (
 	internalconfig "github.com/layer5io/meshery-app-mesh/internal/config"
 	meshkitCfg "github.com/layer5io/meshkit/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"gopkg.in/yaml.v2"
 )
 
 // AppMesh is the app-mesh adapter. It embeds adapter.Adapter
@@ -26,17 +28,22 @@ func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.
 		Adapter: adapter.Adapter{
 			Config:            c,
 			Log:               l,
+			KubeconfigHandler: kc,
 		},
 	}
 }
 
 // ApplyOperation applies the requested operation on app-mesh
 func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+	err := appMesh.CreateKubeconfigs(opReq.K8sConfigs)
+	if err != nil {
+		return err
+	}
 	kubeConfigs := opReq.K8sConfigs
 	appMesh.SetChannel(hchan);
 
 	operations := make(adapter.Operations)
-	err := appMesh.Config.GetObject(adapter.OperationsKey, &operations)
+	err = appMesh.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
 	}
@@ -137,9 +144,58 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	return nil
 }
 
+//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+func (appMesh *AppMesh) CreateKubeconfigs(kubeconfigs []string) error {
+	var errs = make([]error, 0)
+	for _, kubeconfig := range kubeconfigs {
+		kconfig := models.Kubeconfig{}
+		err := yaml.Unmarshal([]byte(kubeconfig), &kconfig)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		// To have control over what exactly to take in on kubeconfig
+		appMesh.KubeconfigHandler.SetKey("kind", kconfig.Kind)
+		appMesh.KubeconfigHandler.SetKey("apiVersion", kconfig.APIVersion)
+		appMesh.KubeconfigHandler.SetKey("current-context", kconfig.CurrentContext)
+		err = appMesh.KubeconfigHandler.SetObject("preferences", kconfig.Preferences)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = appMesh.KubeconfigHandler.SetObject("clusters", kconfig.Clusters)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = appMesh.KubeconfigHandler.SetObject("users", kconfig.Users)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = appMesh.KubeconfigHandler.SetObject("contexts", kconfig.Contexts)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	return mergeErrors(errs)
+}
+
 // ProcessOAM handles the grpc invocation for handling OAM objects
 func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
 	appMesh.SetChannel(hchan)
+	err := appMesh.CreateKubeconfigs(oamReq.K8sConfigs)
+	if err != nil {
+		return "", err
+	}
 	kubeConfigs := oamReq.K8sConfigs
 
 	var comps []v1alpha1.Component
