@@ -16,13 +16,15 @@ package appmesh
 
 import (
 	"context"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
-func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates []adapter.Template) (string, error) {
+func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates []adapter.Template, kubeconfigs []string) (string, error) {
 	st := status.Installing
 
 	if del {
@@ -30,7 +32,7 @@ func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates [
 	}
 
 	for _, template := range templates {
-		err := appMesh.applyManifest([]byte(template.String()), del, namespace)
+		err := appMesh.applyManifest([]byte(template.String()), del, namespace, kubeconfigs)
 		if err != nil {
 			return st, ErrSampleApp(err, st)
 		}
@@ -72,25 +74,57 @@ func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates [
 
 // LoadNamespaceToMesh enables sidecar injection on by labelling requested
 // namespace
-func (appMesh *AppMesh) LoadNamespaceToMesh(namespace string, remove bool) error {
-	ns, err := appMesh.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
-	if err != nil {
-		return ErrLoadNamespaceToMesh(err)
+func (appMesh *AppMesh) LoadNamespaceToMesh(namespace string, remove bool, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			ns, err := kClient.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			if ns.ObjectMeta.Labels == nil {
+				ns.ObjectMeta.Labels = map[string]string{}
+			}
+			//appmesh.k8s.aws/sidecarInjectorWebhook
+			ns.ObjectMeta.Labels["appmesh.k8s.aws/sidecarInjectorWebhook"] = "enabled"
+
+			if remove {
+				ns.ObjectMeta.Labels["appmesh.k8s.aws/sidecarInjectorWebhook"] = "disabled"
+			}
+
+			_, err = kClient.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+
+		}(config)
 	}
 
-	if ns.ObjectMeta.Labels == nil {
-		ns.ObjectMeta.Labels = map[string]string{}
-	}
-	//appmesh.k8s.aws/sidecarInjectorWebhook
-	ns.ObjectMeta.Labels["appmesh.k8s.aws/sidecarInjectorWebhook"] = "enabled"
-
-	if remove {
-		ns.ObjectMeta.Labels["appmesh.k8s.aws/sidecarInjectorWebhook"] = "disabled"
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
 
-	_, err = appMesh.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
-	if err != nil {
-		return ErrLoadNamespaceToMesh(err)
-	}
-	return nil
+	return ErrLoadNamespaceToMesh(mergeErrors(errs))
 }

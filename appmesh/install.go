@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -19,7 +20,7 @@ const (
 )
 
 // Installs APP-MESH service mesh using helm charts.
-func (appMesh *AppMesh) installAppMesh(del bool, version, namespace string) (string, error) {
+func (appMesh *AppMesh) installAppMesh(del bool, version, namespace string, kubeconfigs []string) (string, error) {
 	appMesh.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
 	appMesh.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	appMesh.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
@@ -35,7 +36,7 @@ func (appMesh *AppMesh) installAppMesh(del bool, version, namespace string) (str
 		return st, ErrMeshConfig(err)
 	}
 
-	err = appMesh.applyHelmChart(del, version, namespace)
+	err = appMesh.applyHelmChart(del, version, namespace, kubeconfigs)
 	if err != nil {
 		appMesh.Log.Error(ErrInstallAppMesh(err))
 		return st, ErrInstallAppMesh(err)
@@ -47,11 +48,7 @@ func (appMesh *AppMesh) installAppMesh(del bool, version, namespace string) (str
 	return status.Installed, nil
 }
 
-func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) error {
-	kClient := appMesh.MesheryKubeclient
-	if kClient == nil {
-		return ErrNilClient
-	}
+func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string, kubeconfigs []string) error {
 	version = strings.TrimPrefix(version, "v")
 	appMesh.Log.Info("Installing using helm charts...")
 	var act mesherykube.HelmChartAction
@@ -64,51 +61,111 @@ func (appMesh *AppMesh) applyHelmChart(del bool, version, namespace string) erro
 	if err != nil {
 		return ErrApplyHelmChart(err)
 	}
-	// Install the controller
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		ChartLocation: mesherykube.HelmChartLocation{
-			Repository: repo,
-			Chart:      appMeshController,
-			Version:    cv,
-		},
-		Namespace:       namespace,
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
+
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+
+	for _, config := range kubeconfigs {
+		wg.Add(1);
+		go func(config string, act mesherykube.HelmChartAction) {
+			defer wg.Done();
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			// Install the controller
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				ChartLocation: mesherykube.HelmChartLocation{
+					Repository: repo,
+					Chart:      appMeshController,
+					Version:    cv,
+				},
+				Namespace:       namespace,
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			// Install appmesh-injector. Only needed for controller versions older
+			// than 1.0.0
+			if controlPlaneVersion, err := strconv.Atoi(strings.TrimPrefix(version, "v")[:1]); controlPlaneVersion < 1 && err != nil {
+				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+					ChartLocation: mesherykube.HelmChartLocation{
+						Repository: repo,
+						Chart:      appMeshInject,
+						AppVersion: "", //defaults to latest
+					},
+					Namespace:       namespace,
+					Action:          act,
+					CreateNamespace: true,
+				})
+				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+					return
+				}
+			}
+
+
+		}(config, act)
 	}
 
-	// Install appmesh-injector. Only needed for controller versions older
-	// than 1.0.0
-	if controlPlaneVersion, err := strconv.Atoi(strings.TrimPrefix(version, "v")[:1]); controlPlaneVersion < 1 && err != nil {
-		err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-			ChartLocation: mesherykube.HelmChartLocation{
-				Repository: repo,
-				Chart:      appMeshInject,
-				AppVersion: "", //defaults to latest
-			},
-			Namespace:       namespace,
-			Action:          act,
-			CreateNamespace: true,
-		})
-		if err != nil {
-			return ErrApplyHelmChart(err)
-		}
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
 
-	return err
+	mergedErrors := mergeErrors(errs)
+	return ErrApplyHelmChart(mergedErrors)
 }
 
-func (appMesh *AppMesh) applyManifest(manifest []byte, isDel bool, namespace string) error {
-	err := appMesh.MesheryKubeclient.ApplyManifest(manifest, mesherykube.ApplyOptions{
-		Namespace: namespace,
-		Update:    true,
-		Delete:    isDel,
-	})
-	if err != nil {
-		return err
+func (appMesh *AppMesh) applyManifest(manifest []byte, isDel bool, namespace string, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+			err = kClient.ApplyManifest(manifest, mesherykube.ApplyOptions{
+				Namespace: namespace,
+				Update: true,
+				Delete: isDel,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+		}(config)
 	}
 
-	return nil
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return mergeErrors(errs)
 }

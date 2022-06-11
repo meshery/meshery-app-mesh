@@ -26,13 +26,14 @@ func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.
 		Adapter: adapter.Adapter{
 			Config:            c,
 			Log:               l,
-			KubeconfigHandler: kc,
 		},
 	}
 }
 
 // ApplyOperation applies the requested operation on app-mesh
-func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
+func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+	kubeConfigs := opReq.K8sConfigs
+	appMesh.SetChannel(hchan);
 
 	operations := make(adapter.Operations)
 	err := appMesh.Config.GetObject(adapter.OperationsKey, &operations)
@@ -51,7 +52,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	case internalconfig.AppMeshOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			if stat, err = hh.installAppMesh(opReq.IsDeleteOperation, version, opReq.Namespace); err != nil {
+			if stat, err = hh.installAppMesh(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs); err != nil {
 				e.Summary = fmt.Sprintf("Error while %s AWS App mesh", stat)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
@@ -64,7 +65,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 
 	case internalconfig.LabelNamespace:
 		go func(hh *AppMesh, ee *adapter.Event) {
-			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation, kubeConfigs)
 			operation := "enabled"
 			if opReq.IsDeleteOperation {
 				operation = "removed"
@@ -85,7 +86,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			helmChartURL := operations[opReq.OperationName].AdditionalProperties[internalconfig.HelmChartURL]
 			patches := make([]string, 0)
 			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
-			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL)
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, helmChartURL, kubeConfigs)
 			operation := "install"
 			if opReq.IsDeleteOperation {
 				operation = "uninstall"
@@ -104,7 +105,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
-			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
 				e.Details = err.Error()
@@ -118,7 +119,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 
 	case common.CustomOperation:
 		go func(hh *AppMesh, ee *adapter.Event) {
-			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
+			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
 				e.Details = err.Error()
@@ -137,7 +138,10 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 }
 
 // ProcessOAM handles the grpc invocation for handling OAM objects
-func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
+func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
+	appMesh.SetChannel(hchan)
+	kubeConfigs := oamReq.K8sConfigs
+
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
@@ -157,13 +161,13 @@ func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	// If operation is delete then first HandleConfiguration and then handle the deployment
 	if oamReq.DeleteOp {
 		// Process configuration
-		msg2, err := appMesh.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+		msg2, err := appMesh.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeConfigs)
 		if err != nil {
 			return msg2, ErrProcessOAM(err)
 		}
 
 		// Process components
-		msg1, err := appMesh.HandleComponents(comps, oamReq.DeleteOp)
+		msg1, err := appMesh.HandleComponents(comps, oamReq.DeleteOp, kubeConfigs)
 		if err != nil {
 			return msg1 + "\n" + msg2, ErrProcessOAM(err)
 		}
@@ -172,13 +176,13 @@ func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	}
 
 	// Process components
-	msg1, err := appMesh.HandleComponents(comps, oamReq.DeleteOp)
+	msg1, err := appMesh.HandleComponents(comps, oamReq.DeleteOp, kubeConfigs)
 	if err != nil {
 		return msg1, ErrProcessOAM(err)
 	}
 
 	// Process configuration
-	msg2, err := appMesh.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+	msg2, err := appMesh.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeConfigs)
 	if err != nil {
 		return msg1 + "\n" + msg2, ErrProcessOAM(err)
 	}
