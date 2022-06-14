@@ -161,7 +161,7 @@ func registerWorkloads(port string, log logger.Handler) {
 		URL:              "https://raw.githubusercontent.com/aws/eks-charts/master/stable/appmesh-controller/crds/crds.yaml",
 		GenerationMethod: adapter.Manifests,
 		Config: manifests.Config{
-			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_NGINX_SERVICE_MESH)],
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_APP_MESH)],
 			MeshVersion: version,
 			CrdFilter: manifests.NewCueCrdFilter(manifests.ExtractorPaths{
 				NamePath:    "spec.names.kind",
