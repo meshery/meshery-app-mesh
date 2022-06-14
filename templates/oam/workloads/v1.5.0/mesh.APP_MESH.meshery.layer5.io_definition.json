@@ -2,12 +2,12 @@
  "kind": "WorkloadDefinition",
  "apiVersion": "core.oam.dev/v1alpha1",
  "metadata": {
-  "name": "Mesh.AppMesh",
+  "name": "Mesh.APP_MESH",
   "creationTimestamp": null
  },
  "spec": {
   "definitionRef": {
-   "name": "mesh.AppMesh.meshery.layer5.io"
+   "name": "mesh.APP_MESH.meshery.layer5.io"
   },
   "metadata": {
    "@type": "pattern.meshery.io/mesh/workload",

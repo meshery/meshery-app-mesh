@@ -18,7 +18,7 @@ var LatestVersion string
 var WorkloadPath string
 var AllVersions []string
 
-const Component = "AppMesh"
+const Component = "APP_MESH"
 
 //NewConfig creates the configuration for creating components
 func NewConfig(version string) manifests.Config {

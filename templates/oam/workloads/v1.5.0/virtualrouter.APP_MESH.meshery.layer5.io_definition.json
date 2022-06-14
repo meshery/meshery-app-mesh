@@ -2,17 +2,17 @@
  "kind": "WorkloadDefinition",
  "apiVersion": "core.oam.dev/v1alpha1",
  "metadata": {
-  "name": "VirtualNode.AppMesh",
+  "name": "VirtualRouter.APP_MESH",
   "creationTimestamp": null
  },
  "spec": {
   "definitionRef": {
-   "name": "virtualnode.AppMesh.meshery.layer5.io"
+   "name": "virtualrouter.APP_MESH.meshery.layer5.io"
   },
   "metadata": {
    "@type": "pattern.meshery.io/mesh/workload",
    "k8sAPIVersion": "appmesh.k8s.aws/v1beta2",
-   "k8sKind": "VirtualNode",
+   "k8sKind": "VirtualRouter",
    "meshName": "APP_MESH",
    "meshVersion": "v1.5.0"
   }
