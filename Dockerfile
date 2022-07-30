@@ -14,20 +14,13 @@ COPY main.go main.go
 COPY internal/ internal/
 COPY appmesh/ appmesh/
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-app-mesh main.go
-
-FROM alpine:3.15 as jsonschema-util
-RUN apk add --no-cache curl
-WORKDIR /
-RUN curl -LO https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/v0.1.2/kubeopenapi-jsonschema
-RUN chmod +x /kubeopenapi-jsonschema
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-app-mesh main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/nodejs:16
 WORKDIR /
 ENV DISTRO="debian"
-ENV GOARCH="amd64"
 ENV SERVICE_ADDR="meshery-app-mesh"
 ENV MESHERY_SERVER="http://meshery:9081"
 COPY --from=builder /build/meshery-app-mesh .
