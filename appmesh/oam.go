@@ -91,7 +91,7 @@ func handleComponentAppMesh(appMesh *AppMesh, comp v1alpha1.Component, isDel boo
 	// because the configuration is already validated against the schema
 	version := comp.Spec.Version
 	if version == "" {
-		return "", fmt.Errorf("pass valid version inside service for AppMesh installation")
+		return "", fmt.Errorf("missing valid version inside service for AppMesh installation")
 	}
 	//TODO: When no version is passed in service, use the latest AppMesh version
 	msg, err := appMesh.installAppMesh(isDel, version, comp.Namespace, kubeconfigs)
