@@ -7,10 +7,12 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
+	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshery-app-mesh/appmesh/oam"
 	internalconfig "github.com/layer5io/meshery-app-mesh/internal/config"
 	meshkitCfg "github.com/layer5io/meshkit/config"
+	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
@@ -48,21 +50,22 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		return err
 	}
 
-	e := &adapter.Event{
-		Operationid: opReq.OperationID,
+	e := &meshes.EventsResponse{
+		OperationId: opReq.OperationID,
 		Summary:     status.Deploying,
 		Details:     "Operation is not supported",
+		Component:   internalconfig.ServerConfig["type"],
+		ComponentName: internalconfig.ServerConfig["name"],
 	}
 	stat := status.Deploying
 
 	switch opReq.OperationName {
 	case internalconfig.AppMeshOperation:
-		go func(hh *AppMesh, ee *adapter.Event) {
+		go func(hh *AppMesh, ee *meshes.EventsResponse) {
 			version := string(operations[opReq.OperationName].Versions[0])
 			if stat, err = hh.installAppMesh(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs); err != nil {
-				e.Summary = fmt.Sprintf("Error while %s AWS App mesh", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s AWS App mesh", stat)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("App mesh %s successfully", stat)
@@ -71,16 +74,15 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		}(appMesh, e)
 
 	case internalconfig.LabelNamespace:
-		go func(hh *AppMesh, ee *adapter.Event) {
+		go func(hh *AppMesh, ee *meshes.EventsResponse) {
 			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation, kubeConfigs)
 			operation := "enabled"
 			if opReq.IsDeleteOperation {
 				operation = "removed"
 			}
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
@@ -88,7 +90,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			hh.StreamInfo(e)
 		}(appMesh, e)
 	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon:
-		go func(hh *AppMesh, ee *adapter.Event) {
+		go func(hh *AppMesh, ee *meshes.EventsResponse) {
 			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			helmChartURL := operations[opReq.OperationName].AdditionalProperties[internalconfig.HelmChartURL]
 			patches := make([]string, 0)
@@ -100,9 +102,8 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			}
 
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
@@ -110,13 +111,12 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			hh.StreamInfo(e)
 		}(appMesh, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
-		go func(hh *AppMesh, ee *adapter.Event) {
+		go func(hh *AppMesh, ee *meshes.EventsResponse) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s %s application", stat, appName)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
@@ -125,12 +125,11 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		}(appMesh, e)
 
 	case common.CustomOperation:
-		go func(hh *AppMesh, ee *adapter.Event) {
+		go func(hh *AppMesh, ee *meshes.EventsResponse) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				summary := fmt.Sprintf("Error while %s custom operation", stat)
+				hh.streamErr(summary, e, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
@@ -138,7 +137,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			hh.StreamInfo(e)
 		}(appMesh, e)
 	default:
-		appMesh.StreamErr(e, ErrOpInvalid)
+		appMesh.streamErr("Invalid operation", e, ErrOpInvalid)
 
 	}
 	return nil
@@ -244,4 +243,13 @@ func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	}
 
 	return msg1 + "\n" + msg2, nil
+}
+
+func(appMesh *AppMesh) streamErr(summary string, e *meshes.EventsResponse, err error) {
+	e.Summary = summary
+	e.Details = err.Error()
+	e.ErrorCode = errors.GetCode(err)
+	e.ProbableCause = errors.GetCause(err)
+	e.SuggestedRemediation = errors.GetRemedy(err)
+	appMesh.StreamErr(e, err)
 }
