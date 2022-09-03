@@ -15,19 +15,34 @@ type CompHandler func(*AppMesh, v1alpha1.Component, bool, []string) (string, err
 func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
 	var errs []error
 	var msgs []string
-
+	stat1 := "deploying"
+	stat2 := "deployed"
+	if isDel {
+		stat1 = "removing"
+		stat2 = "removed"
+	}
 	compFuncMap := map[string]CompHandler{
 		"AppMesh": handleComponentAppMesh,
 	}
 
 	for _, comp := range comps {
+		ee := &meshes.EventsResponse{
+			OperationId:   uuid.New().String(),
+			Component:     config.ServerConfig["type"],
+			ComponentName: config.ServerConfig["name"],
+		}
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
 			msg, err := handleAppMeshCoreComponent(appMesh, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
+				ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
+				mesh.streamErr(ee.Summary, ee, err)
 				errs = append(errs, err)
 				continue
 			}
+			ee.Summary = fmt.Sprintf("%s %s successfully", comp.Spec.Type, stat2)
+			ee.Details = fmt.Sprintf("The %s is now %s.", comp.Spec.Type, stat2)
+			mesh.StreamInfo(ee)
 
 			msgs = append(msgs, msg)
 			continue
@@ -35,9 +50,14 @@ func (appMesh *AppMesh) HandleComponents(comps []v1alpha1.Component, isDel bool,
 
 		msg, err := fnc(appMesh, comp, isDel, kubeconfigs)
 		if err != nil {
+			ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
+			mesh.streamErr(ee.Summary, ee, err)
 			errs = append(errs, err)
 			continue
 		}
+		ee.Summary = fmt.Sprintf("%s %s %s successfully", comp.Name, comp.Spec.Type, stat2)
+		ee.Details = fmt.Sprintf("The %s %s is now %s.", comp.Name, comp.Spec.Type, stat2)
+		mesh.StreamInfo(ee)
 
 		msgs = append(msgs, msg)
 	}

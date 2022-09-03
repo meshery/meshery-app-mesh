@@ -91,13 +91,13 @@ func main() {
 	//      log.Err("Tracing Init Failed", err.Error())
 	//      os.Exit(1)
 	// }
-
+	e := events.NewEventStreamer()
 	// Initialize Handler intance
-	handler := appmesh.New(cfg, log, kubeconfigHandler)
+	handler := appmesh.New(cfg, log, kubeconfigHandler, e)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
-	service.Channel = make(chan interface{}, 10)
+	service.EventStreamer = e
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha

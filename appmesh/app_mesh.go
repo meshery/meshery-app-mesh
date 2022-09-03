@@ -16,6 +16,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"github.com/layer5io/meshkit/utils/events"
 	"gopkg.in/yaml.v2"
 )
 
@@ -25,24 +26,25 @@ type AppMesh struct {
 }
 
 // New initializes AppMesh handler.
-func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.Handler {
+func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler, e *events.EventStreamer) adapter.Handler {
 	return &AppMesh{
 		Adapter: adapter.Adapter{
 			Config:            c,
 			Log:               l,
 			KubeconfigHandler: kc,
+			EventStreamer:     e,
 		},
 	}
 }
 
 // ApplyOperation applies the requested operation on app-mesh
-func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 	err := appMesh.CreateKubeconfigs(opReq.K8sConfigs)
 	if err != nil {
 		return err
 	}
 	kubeConfigs := opReq.K8sConfigs
-	appMesh.SetChannel(hchan);
+	appMesh.SetChannel(hchan)
 
 	operations := make(adapter.Operations)
 	err = appMesh.Config.GetObject(adapter.OperationsKey, &operations)
@@ -51,10 +53,10 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 	}
 
 	e := &meshes.EventsResponse{
-		OperationId: opReq.OperationID,
-		Summary:     status.Deploying,
-		Details:     "Operation is not supported",
-		Component:   internalconfig.ServerConfig["type"],
+		OperationId:   opReq.OperationID,
+		Summary:       status.Deploying,
+		Details:       "Operation is not supported",
+		Component:     internalconfig.ServerConfig["type"],
 		ComponentName: internalconfig.ServerConfig["name"],
 	}
 	stat := status.Deploying
@@ -65,12 +67,12 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			version := string(operations[opReq.OperationName].Versions[0])
 			if stat, err = hh.installAppMesh(opReq.IsDeleteOperation, version, opReq.Namespace, kubeConfigs); err != nil {
 				summary := fmt.Sprintf("Error while %s AWS App mesh", stat)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("App mesh %s successfully", stat)
 			ee.Details = fmt.Sprintf("The App mesh is now %s.", stat)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(appMesh, e)
 
 	case internalconfig.LabelNamespace:
@@ -116,12 +118,12 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
 				summary := fmt.Sprintf("Error while %s %s application", stat, appName)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(appMesh, e)
 
 	case common.CustomOperation:
@@ -129,12 +131,12 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
 				summary := fmt.Sprintf("Error while %s custom operation", stat)
-				hh.streamErr(summary, e, err)
+				hh.streamErr(summary, ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
 			ee.Details = ""
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(appMesh, e)
 	default:
 		appMesh.streamErr("Invalid operation", e, ErrOpInvalid)
@@ -189,12 +191,13 @@ func (appMesh *AppMesh) CreateKubeconfigs(kubeconfigs []string) error {
 }
 
 // ProcessOAM handles the grpc invocation for handling OAM objects
-func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
-	appMesh.SetChannel(hchan)
+func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
+
 	err := appMesh.CreateKubeconfigs(oamReq.K8sConfigs)
 	if err != nil {
 		return "", err
 	}
+	appMesh.SetChannel(hchan)
 	kubeConfigs := oamReq.K8sConfigs
 
 	var comps []v1alpha1.Component
@@ -245,7 +248,7 @@ func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	return msg1 + "\n" + msg2, nil
 }
 
-func(appMesh *AppMesh) streamErr(summary string, e *meshes.EventsResponse, err error) {
+func (appMesh *AppMesh) streamErr(summary string, e *meshes.EventsResponse, err error) {
 	e.Summary = summary
 	e.Details = err.Error()
 	e.ErrorCode = errors.GetCode(err)
