@@ -17,6 +17,7 @@ import (
 	"github.com/layer5io/meshery-app-mesh/build"
 	"github.com/layer5io/meshery-app-mesh/internal/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils/events"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-app-mesh/appmesh/oam"

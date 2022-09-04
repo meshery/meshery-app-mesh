@@ -44,7 +44,6 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		return err
 	}
 	kubeConfigs := opReq.K8sConfigs
-	appMesh.SetChannel(hchan)
 
 	operations := make(adapter.Operations)
 	err = appMesh.Config.GetObject(adapter.OperationsKey, &operations)
@@ -197,7 +196,6 @@ func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMReques
 	if err != nil {
 		return "", err
 	}
-	appMesh.SetChannel(hchan)
 	kubeConfigs := oamReq.K8sConfigs
 
 	var comps []v1alpha1.Component
