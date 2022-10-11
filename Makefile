@@ -19,29 +19,19 @@ include build/Makefile.show-help.mk
 # Environment Setup
 #-----------------------------------------------------------------------------
 BUILDER=buildx-multi-arch
-ADAPTER=meshery-app-mesh
+ADAPTER=app-mesh
 
-v ?= 1.17.8 # Default go version to be used
+v ?= 1.19.1 # Default go version to be used
 
 
 #-----------------------------------------------------------------------------
 # Docker-based Builds
 #-----------------------------------------------------------------------------
-.PHONY: docker docker-run lint proto-setup proto error test run run-force-dynamic-reg
-
+.PHONY: docker docker-run lint error test run run-force-dynamic-reg
 
 ## Lint check Golang
 lint:
 	golangci-lint run
-
-## Retrieve protos
-proto-setup:
-	cd meshes
-	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto
-
-## Generate protos
-proto:	
-	protoc -I meshes/ meshes/meshops.proto --go_out=plugins=grpc:./meshes/
 
 ## Build Adapter container image with "edge-latest" tag
 docker:
@@ -57,7 +47,7 @@ docker-run:
 
 ## Build and run Adapter locally
 run:
-	go$(v) mod tidy -compat=1.17; \
+	go$(v) mod tidy; \
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
 ## Build and run Adapter locally; force component registration
