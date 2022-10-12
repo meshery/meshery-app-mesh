@@ -1,4 +1,4 @@
-name: Meshery-App-Mesh Build and Releaser
+name: Meshery-App Mesh Build and Release
 on:
   push:
     branches:
@@ -17,7 +17,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Setup Go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@master
       with:
         go-version: ${{ secrets.GO_VERSION }}
     - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build .
