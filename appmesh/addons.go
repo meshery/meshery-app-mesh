@@ -13,7 +13,6 @@ import (
 )
 
 func (appMesh *AppMesh) installAddon(ns string, del bool, svcName string, patches []string, helmChartURL string, kubeconfigs []string) (string, error) {
-
 	st := status.Installing
 
 	if del {
@@ -24,9 +23,8 @@ func (appMesh *AppMesh) installAddon(ns string, del bool, svcName string, patche
 	var errs []error
 	var errMx sync.Mutex
 
-
 	for _, config := range kubeconfigs {
-		wg.Add(1);
+		wg.Add(1)
 		go func(config string) {
 			defer wg.Done()
 			kClient, err := kubernetes.New([]byte(config))

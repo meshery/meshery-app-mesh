@@ -44,7 +44,6 @@ func init() {
 
 // main is the entrypoint of the adaptor
 func main() {
-
 	// Initialize Logger instance
 	log, err := logger.New(serviceName, logger.Options{
 		Format:     logger.SyslogLogFormat,
@@ -136,7 +135,6 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 		<-ticker.C
 		registerWorkloads(port, log)
 	}
-
 }
 func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Registering latest components with Meshery Server")

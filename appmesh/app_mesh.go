@@ -82,7 +82,7 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				operation = "removed"
 			}
 			if err != nil {
-				summary := fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				summary := fmt.Sprintf("Error while labeling %s", opReq.Namespace)
 				hh.streamErr(summary, e, err)
 				return
 			}
@@ -107,8 +107,8 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 				hh.streamErr(summary, e, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
-			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
+			ee.Summary = fmt.Sprintf("Successfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Successfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
 			hh.StreamInfo(e)
 		}(appMesh, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
@@ -139,12 +139,11 @@ func (appMesh *AppMesh) ApplyOperation(ctx context.Context, opReq adapter.Operat
 		}(appMesh, e)
 	default:
 		appMesh.streamErr("Invalid operation", e, ErrOpInvalid)
-
 	}
 	return nil
 }
 
-//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+// CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
 func (appMesh *AppMesh) CreateKubeconfigs(kubeconfigs []string) error {
 	var errs = make([]error, 0)
 	for _, kubeconfig := range kubeconfigs {
@@ -191,7 +190,6 @@ func (appMesh *AppMesh) CreateKubeconfigs(kubeconfigs []string) error {
 
 // ProcessOAM handles the grpc invocation for handling OAM objects
 func (appMesh *AppMesh) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
-
 	err := appMesh.CreateKubeconfigs(oamReq.K8sConfigs)
 	if err != nil {
 		return "", err
