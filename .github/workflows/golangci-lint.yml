@@ -24,7 +24,6 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
-          cache: true
       - uses: actions/checkout@v3
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
