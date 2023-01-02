@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "BackendGroup.APP_MESH",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "backendgroup.APP_MESH.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "appmesh.k8s.aws/v1beta2",
+   "k8sKind": "BackendGroup",
+   "meshName": "APP_MESH",
+   "meshVersion": "v1.4.1"
+  }
+ }
+}
