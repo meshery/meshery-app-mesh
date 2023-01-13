@@ -17,7 +17,6 @@ var (
 	basePath, _         = os.Getwd()
 	WorkloadPath        = filepath.Join(basePath, "templates", "oam", "workloads")
 	MeshmodelComponents = filepath.Join(basePath, "templates", "meshmodel", "components")
-	traitPath           = filepath.Join(basePath, "templates", "oam", "traits")
 	// traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
 	pathSets = []schemaDefinitionPathSet{}
 )
