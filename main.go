@@ -9,7 +9,7 @@ import (
 	"time"
 
 	//"github.com/aws/aws-sdk-go/service/appmesh"
-
+	"github.com/google/uuid"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
@@ -27,6 +27,7 @@ var (
 	serviceName = "app-mesh-adapter"
 	version     = "edge"
 	gitsha      = "none"
+	instanceID  = uuid.NewString()
 )
 
 func isDebug() bool {
@@ -124,6 +125,11 @@ func registerCapabilities(port string, log logger.Handler) {
 	// if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 	// 	log.Info(err.Error())
 	// }
+
+	// Register meshmodel components
+	if err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port); err != nil {
+		log.Error(err)
+	}
 }
 
 func registerDynamicCapabilities(port string, log logger.Handler) {
@@ -158,11 +164,13 @@ func registerWorkloads(port string, log logger.Handler) {
 
 	log.Info("Registering latest workload components for version ", version)
 	err := adapter.CreateComponents(adapter.StaticCompConfig{
-		URL:     url,
-		Method:  gm,
-		Path:    build.WorkloadPath,
-		DirName: version,
-		Config:  build.NewConfig(version),
+		URL:             url,
+		Method:          gm,
+		OAMPath:         build.WorkloadPath,
+		MeshModelPath:   build.MeshModelPath,
+		MeshModelConfig: build.MeshModelConfig,
+		DirName:         version,
+		Config:          build.NewConfig(version),
 	})
 	if err != nil {
 		log.Info("Failed to generate components for version " + version)
