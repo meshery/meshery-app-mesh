@@ -18,7 +18,7 @@ var (
 	// ErrSampleAppCode    failure
 	ErrSampleAppCode = "appmesh_test_code"
 	// ErrLoadNamespaceToMeshCode represents the error
-	// which is generated when the namespace could not be labelled and updated
+	// which is generated when the namespace could not be labeled and updated
 	ErrLoadNamespaceToMeshCode = "appmesh_test_code"
 	// ErrOpInvalidCode failure
 	ErrOpInvalidCode = "appmesh_test_code"
@@ -38,7 +38,7 @@ var (
 	ErrAppMeshCoreComponentFailCode = "replace"
 
 	// ErrInvalidOAMComponentTypeCode represents error code when
-	// invalid OAM components are registerd
+	// invalid OAM components are registered
 	ErrInvalidOAMComponentTypeCode = "replace"
 
 	// ErrProcessOAMCode represents error code while parsing OAM
@@ -67,17 +67,16 @@ var (
 
 	// ErrParseOAMComponent represents the error which is
 	// generated during the OAM component parsing
-	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occured while prasing application component in the OAM request made"}, []string{"Invalid OAM component passed in OAM request"}, []string{"Check if your request has vaild OAM components"})
+	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occurred while prasing application component in the OAM request made"}, []string{"Invalid OAM component passed in OAM request"}, []string{"Check if your request has vaild OAM components"})
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occurred while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
 )
 
 // ErrInstallAppMesh is the error for install mesh
 func ErrInstallAppMesh(err error) error {
 	return errors.New(ErrInstallAppMeshCode, errors.Alert, []string{"Error with App Mesh installation"}, []string{err.Error()}, []string{}, []string{})
-
 }
 
 // ErrMeshConfig is the error for mesh config
@@ -97,7 +96,7 @@ func ErrStreamEvent(err error) error {
 
 // ErrSampleApp is the error for operations on the sample apps
 func ErrSampleApp(err error, status string) error {
-	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
+	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occurred while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrCustomOperation is the error for custom operations
@@ -107,7 +106,7 @@ func ErrCustomOperation(err error) error {
 
 // ErrApplyHelmChart is the occurend while applying helm chart
 func ErrApplyHelmChart(err error) error {
-	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occurred while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrParseAppMeshCoreComponent is the error when app-mesh core component manifest parsing fails

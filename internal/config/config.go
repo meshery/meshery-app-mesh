@@ -7,8 +7,8 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
-	configprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshery-adapter-library/status"
+	configprovider "github.com/layer5io/meshkit/config/provider"
 
 	//	"github.com/layer5io/meshery-adapter-library"
 	"github.com/layer5io/meshkit/utils"

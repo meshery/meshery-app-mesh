@@ -94,7 +94,6 @@ func (appMesh *AppMesh) HandleApplicationConfiguration(config v1alpha1.Configura
 	}
 
 	return mergeMsgs(msgs), nil
-
 }
 
 func handleNamespaceLabel(appMesh *AppMesh, namespaces []string, isDel bool, kubeconfigs []string) error {

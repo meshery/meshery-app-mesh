@@ -20,8 +20,8 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates []adapter.Template, kubeconfigs []string) (string, error) {
@@ -72,7 +72,7 @@ func (appMesh *AppMesh) installSampleApp(namespace string, del bool, templates [
 }
 */
 
-// LoadNamespaceToMesh enables sidecar injection on by labelling requested
+// LoadNamespaceToMesh enables sidecar injection on by labeling requested
 // namespace
 func (appMesh *AppMesh) LoadNamespaceToMesh(namespace string, remove bool, kubeconfigs []string) error {
 	var wg sync.WaitGroup
@@ -116,8 +116,6 @@ func (appMesh *AppMesh) LoadNamespaceToMesh(namespace string, remove bool, kubec
 				errMx.Unlock()
 				return
 			}
-
-
 		}(config)
 	}
 
