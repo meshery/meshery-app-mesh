@@ -15,11 +15,11 @@ newPRWelcomeComment: >
 # Configuration for first-pr-merge - https://github.com/behaviorbot/first-pr-merge
 # Comment to be posted to on pull requests merged by a first time user
 firstPRMergeComment: >
-  Thanks for your contribution to the Layer5 community! :tada:
+ Thanks for your contribution to Meshery! :tada:
    
   <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/inviBeast/meshery-app-mesh/blob/master/.github/welcome/Meshery_celebration_bg_dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/inviBeast/meshery-app-mesh/blob/master/.github/welcome/Meshery_celebration_bg_light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/meshery/meshery-app-mesh/master/.github/welcome/Meshery-celebration-Light.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/meshery/meshery-app-mesh/master/.github/welcome/Meshery-celebration-Dark.svg">
   <img alt="Shows a black logo in light color mode and a white one in dark color mode." src=" ">
   </picture>
 
