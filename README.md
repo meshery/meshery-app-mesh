@@ -1,5 +1,12 @@
-<p style="text-align:center;" align="center"><a href="https://layer5.io/meshery"><img align="center" style="margin-bottom:20px;" src=".github/img/readme/meshery-logo-tag-light-text-side.png"  width="70%" /></a><br /><br /></p>
-<div align="center">
+<p style="text-align:center;" align="center">
+  <a href="https://layer5.io/meshery">
+    <picture align="center">
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/meshery/meshery-istio/master/img/readme/meshery-logo-dark-text-side.svg"  width="70%" align="center" style="margin-bottom:20px;">readme/community.svg
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/meshery/meshery-istio/master/img/readme/meshery-logo-light-text-side.svg" width="70%" align="center" style="margin-bottom:20px;">
+      <img alt="Shows an illustrated light mode meshery logo in light color mode and a dark mode meshery logo dark color mode." src="https://raw.githubusercontent.com/meshery/meshery-istio/master/img/readme/meshery-logo-light-text-side.svg" width="70%" align="center" style="margin-bottom:20px;">
+    </picture>
+  </a><br /><br />
+</p>
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-app-mesh.svg)](https://hub.docker.com/r/layer5/meshery-app-mesh)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-app-mesh)](https://goreportcard.com/report/github.com/layer5io/meshery-app-mesh)
