@@ -16,9 +16,9 @@
     {
         "name": "APP_MESH",
         "version": "v1.4.1",
-        "displayName": "APP_MESH",
+        "displayName": "AWS App Mesh",
         "category": {
-			"name": "Orchestration \u0026 Management",
+			"name":"Cloud Native Network",
 			"metadata": null
 		},
         "subCategory": "Service Mesh"
