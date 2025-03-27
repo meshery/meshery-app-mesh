@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.6.0
 	github.com/layer5io/meshery-adapter-library v0.6.5
 	github.com/layer5io/meshkit v0.6.31
 	github.com/layer5io/service-mesh-performance v0.3.4
