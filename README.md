@@ -8,7 +8,7 @@
   </a><br /><br />
 </p>
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-app-mesh.svg)](https://hub.docker.com/r/layer5/meshery-app-mesh)
+[![Docker Pulls](https://img.shields.io/docker/pulls/meshery/meshery-app-mesh.svg)](https://hub.docker.com/r/meshery/meshery-app-mesh)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-app-mesh)](https://goreportcard.com/report/github.com/layer5io/meshery-app-mesh)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/meshery/meshery-app-mesh/release-drafter.yml)](https://github.com/meshery/meshery-app-mesh/actions)
 [![GitHub](https://img.shields.io/github/license/meshery/meshery-app-mesh.svg)](LICENSE)
@@ -22,7 +22,7 @@
 
 <p style="clear:both;">
 <h1>Meshery Adapter for AWS App Mesh</h1>
-<h2><a href="https://meshery.layer5.io/docs">AWS App Mesh</a></h2>
+<h2><a href="https://docs.meshery.io">AWS App Mesh</a></h2>
 <a href="https://aws.amazon.com/app-mesh/">
  <img src=".github/img/readme/aws-app-mesh.svg" style="margin:10px;" width="125px" 
    alt="Meshery Adapter for AWS App Mesh" align="left" />
@@ -45,7 +45,7 @@ Our projects are community-built and welcome collaboration. 👍 Be sure to see 
 
 <a href="https://meshery.io/community"><img alt="Meshery Cloud Native Community" src=".github/img/readme/slack-128.png" style="margin-left:10px;padding-top:5px;" width="110px" align="right" /></a>
 
-<a href="http://slack.layer5.io"><img alt="Meshery Cloud Native Community" src=".github/img/readme/community.svg" style="margin-right:8px;padding-top:5px;" width="140px" align="left" /></a>
+<a href="https://slack.meshery.io"><img alt="Meshery Cloud Native Community" src=".github/img/readme/community.svg" style="margin-right:8px;padding-top:5px;" width="140px" align="left" /></a>
 
 <p>
 ✔️ <em><strong>Join</strong></em> any or all of the weekly meetings on <a href="https://meshery.io/calendar">community calendar</a>.<br />
